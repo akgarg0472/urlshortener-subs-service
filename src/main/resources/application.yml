@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: subscription-service
+  profiles:
+    active: dev
+
+eureka:
+  client:
+    enabled: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
