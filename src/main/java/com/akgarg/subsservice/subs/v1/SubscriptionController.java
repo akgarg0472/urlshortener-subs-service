@@ -1,8 +1,10 @@
 package com.akgarg.subsservice.subs.v1;
 
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
+import com.akgarg.subsservice.request.VerifySubscriptionRequest;
 import com.akgarg.subsservice.response.GetSubscriptionResponse;
 import com.akgarg.subsservice.response.MakeSubscriptionResponse;
+import com.akgarg.subsservice.response.VerifySubscriptionResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -20,14 +22,16 @@ public class SubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<MakeSubscriptionResponse> makeSubscription(
             @RequestBody @Valid final MakeSubscriptionRequest request,
             final BindingResult validationResult
     ) {
         checkValidationResultAndThrowExceptionOnFailure(validationResult);
         final MakeSubscriptionResponse response = subscriptionService.subscribe(request);
-        return ResponseEntity.status(response.statusCode()).body(response);
+        return ResponseEntity
+                .status(response.statusCode())
+                .body(response);
     }
 
     @GetMapping
@@ -35,6 +39,16 @@ public class SubscriptionController {
             @RequestParam("userId") final String userId
     ) {
         final GetSubscriptionResponse response = subscriptionService.getSubscriptionByUserId(userId);
+        return ResponseEntity.status(response.statusCode()).body(response);
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<VerifySubscriptionResponse> verifySubscription(
+            @RequestBody @Valid final VerifySubscriptionRequest request,
+            final BindingResult validationResult
+    ) {
+        checkValidationResultAndThrowExceptionOnFailure(validationResult);
+        final VerifySubscriptionResponse response = subscriptionService.verifySubscription(request);
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 

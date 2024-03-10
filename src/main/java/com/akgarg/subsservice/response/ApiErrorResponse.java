@@ -2,7 +2,6 @@ package com.akgarg.subsservice.response;
 
 
 import com.akgarg.subsservice.exception.BadRequestException;
-import com.akgarg.subsservice.exception.SubsException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
@@ -39,18 +38,6 @@ public final class ApiErrorResponse {
 
     public static ApiErrorResponse resourceNotFoundErrorResponse(final String message) {
         return new ApiErrorResponse(new String[]{message}, NOT_FOUND, "Not Found");
-    }
-
-    public static ApiErrorResponse parseException(final SubsException e) {
-        return new ApiErrorResponse(e.getErrors(), getErrorTypeFromErrorCode(e.getErrorCode()), e.getMessage());
-    }
-
-    private static ApiErrorType getErrorTypeFromErrorCode(final int errorCode) {
-        return switch (errorCode) {
-            case 404 -> NOT_FOUND;
-            case 400 -> BAD_REQUEST;
-            default -> INTERNAL_SERVER_ERROR;
-        };
     }
 
     public static ApiErrorResponse internalServerErrorResponse() {

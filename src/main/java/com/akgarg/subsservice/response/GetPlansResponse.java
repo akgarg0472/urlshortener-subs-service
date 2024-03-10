@@ -1,8 +1,12 @@
 package com.akgarg.subsservice.response;
 
+import com.akgarg.subsservice.plans.v1.PlanDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record GetPlansResponse(@JsonProperty("status_code") int statusCode,
-                               @JsonProperty("message") String message,
-                               @JsonProperty("errors") Object errors) {
+import java.util.List;
+
+public record GetPlansResponse(
+        @JsonProperty("status_code") int statusCode,
+        @JsonProperty("plans") List<PlanDTO> plans,
+        @JsonProperty("errors") Object errors) {
 }

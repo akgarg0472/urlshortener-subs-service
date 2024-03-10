@@ -32,7 +32,6 @@ public class GlobalExceptionHandler {
             case HttpMessageNotReadableException ex -> badRequestErrorResponse("Please provide valid request body");
             case NoResourceFoundException ex ->
                     resourceNotFoundErrorResponse("Requested resource not found: " + ex.getResourcePath());
-            case ResourceNotFoundException ex -> resourceNotFoundErrorResponse(ex.getMessage());
             case MissingServletRequestParameterException ex ->
                     badRequestErrorResponse("Parameter '%s' of type %s is missing".formatted(ex.getParameterName(), ex.getParameterType()));
             default -> internalServerErrorResponse();
