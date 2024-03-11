@@ -24,6 +24,10 @@ public final class ApiErrorResponse {
         this.message = message;
     }
 
+    public static ApiErrorResponse unauthorized(final String errorMsg) {
+        return new ApiErrorResponse(new String[]{errorMsg}, UNAUTHORIZED, "Unauthorized");
+    }
+
     public static ApiErrorResponse methodNotAllowedErrorResponse(final String message) {
         return new ApiErrorResponse(new String[]{"Request Method not allowed"}, METHOD_NOT_ALLOWED, message);
     }
@@ -44,6 +48,10 @@ public final class ApiErrorResponse {
         return new ApiErrorResponse(new String[]{"Internal Server Error"}, INTERNAL_SERVER_ERROR, "Internal server error");
     }
 
+    public static ApiErrorResponse unauthenticated(final String errorMsg) {
+        return new ApiErrorResponse(new String[]{errorMsg}, UNAUTHENTICATED, "Unauthenticated");
+    }
+
     @SuppressWarnings("unused")
     public String[] getErrors() {
         return errors;
@@ -54,7 +62,9 @@ public final class ApiErrorResponse {
         BAD_REQUEST(400),
         INTERNAL_SERVER_ERROR(500),
         METHOD_NOT_ALLOWED(405),
-        NOT_FOUND(404);
+        NOT_FOUND(404),
+        UNAUTHORIZED(403),
+        UNAUTHENTICATED(401);
 
         private final int code;
 
