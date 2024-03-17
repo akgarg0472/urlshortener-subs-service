@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -27,7 +29,33 @@ public class PlansService {
     private final PlanRepository planRepository;
 
     public CreatePlanResponse createPlan(final CreatePlanRequest request) {
-        return null;
+        final String logId = SubsUtils.generateLogId();
+        LOGGER.info("{} request received to create plan: {}", logId, request);
+
+        final Optional<Plan> planByCode = planRepository.findByCode(request.code());
+
+        if (planByCode.isPresent()) {
+            LOGGER.error("{} plan already exists with code={}", logId, request.code());
+            return new CreatePlanResponse(HttpStatus.CONFLICT.value(), "Plan already exists with code=" + request.code());
+        }
+
+        final Plan plan = new Plan();
+        plan.setId(UUID.randomUUID().toString());
+        plan.setIcon(request.icon());
+        plan.setTitle(request.title());
+        plan.setDescription(request.description());
+        plan.setCode(request.code());
+        plan.setPrice(request.price());
+        plan.setFeatures(request.features());
+        plan.setPrivileges(request.privileges());
+        plan.setVisible(request.visible());
+        plan.setValidity(request.validity());
+
+        planRepository.save(plan);
+
+        LOGGER.info("{} plan created successfully: {}", logId, plan);
+
+        return new CreatePlanResponse(HttpStatus.CREATED.value(), "Plan created successfully");
     }
 
     public GetPlansResponse getPlans(final int limit) {
@@ -55,7 +83,12 @@ public class PlansService {
     }
 
     public UpdatePlanResponse updatePlan(final String planId, final UpdatePlanRequest request) {
-        return null;
+        final String logId = SubsUtils.generateLogId();
+        LOGGER.info("{} request received to update plan with id: {} -> {}", logId, planId, request);
+
+        final Plan plan = getPlanByPlanId(planId);
+
+        return new UpdatePlanResponse(HttpStatus.OK.value(), "Plan updated successfully");
     }
 
     public DeletePlanResponse deletePlan(final String planId) {

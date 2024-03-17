@@ -1,6 +1,7 @@
 package com.akgarg.subsservice.security;
 
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @Component
 @AllArgsConstructor
+@Profile("prod")
 public class AuthServiceUserDetailsService implements UserDetailsService {
 
     private final RestClient restClient;
@@ -36,9 +38,9 @@ public class AuthServiceUserDetailsService implements UserDetailsService {
             final boolean success = Boolean.parseBoolean(String.valueOf(response.get("success")));
 
             if (success) {
-                return new User(username, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                return new User(username, "", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
             } else {
-                return new User(username, null, List.of());
+                return new User(username, "", List.of(new SimpleGrantedAuthority("ROLE_USER")));
             }
         } catch (Exception e) {
             throw new UsernameNotFoundException("No admin user found with userId=%s".formatted(username));

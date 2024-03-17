@@ -16,12 +16,12 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @AllArgsConstructor
-public class SpringSecurityConfig {
+public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAuthenticationExceptionHandler authenticationExceptionHandler;
-    private final UsernamePasswordExtractFilter usernamePasswordExtractFilter;
+    private final UsernamePasswordExtractionFilter usernamePasswordExtractionFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
@@ -44,7 +44,7 @@ public class SpringSecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable);
         http.userDetailsService(userDetailsService);
-        http.addFilterBefore(usernamePasswordExtractFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(usernamePasswordExtractionFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(authenticationExceptionHandler, LogoutFilter.class);
         http.sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(authenticationEntryPoint));

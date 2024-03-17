@@ -8,7 +8,10 @@ import com.akgarg.subsservice.response.GetPlansResponse;
 import com.akgarg.subsservice.response.UpdatePlanResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import static com.akgarg.subsservice.utils.SubsUtils.checkValidationResultAndThrowExceptionOnFailure;
 
 @RestController
 @RequestMapping("/api/v1/subscriptions/plans")
@@ -21,7 +24,11 @@ public class PlansController {
     }
 
     @PostMapping
-    public ResponseEntity<CreatePlanResponse> createPlan(@RequestBody @Valid final CreatePlanRequest request) {
+    public ResponseEntity<CreatePlanResponse> createPlan(
+            @RequestBody @Valid final CreatePlanRequest request,
+            final BindingResult validationResult
+    ) {
+        checkValidationResultAndThrowExceptionOnFailure(validationResult);
         final CreatePlanResponse response = plansService.createPlan(request);
         return ResponseEntity.status(response.statusCode()).body(response);
     }

@@ -19,7 +19,7 @@ import java.io.IOException;
 
 @Component
 @AllArgsConstructor
-public class UsernamePasswordExtractFilter extends OncePerRequestFilter {
+public class UsernamePasswordExtractionFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
 
@@ -29,7 +29,7 @@ public class UsernamePasswordExtractFilter extends OncePerRequestFilter {
             @Nonnull final HttpServletResponse response,
             @Nonnull final FilterChain filterChain
     ) throws ServletException, IOException {
-        final String username = request.getHeader("X-USERNAME");
+        final String username = request.getHeader("X-AUTH-USERNAME");
 
         if (username != null && !username.isBlank() &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
