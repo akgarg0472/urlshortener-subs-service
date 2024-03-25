@@ -33,12 +33,12 @@ public record CreatePlanRequest(
         String currency,
 
         @JsonProperty("plan_features")
-        @NotBlank(message = "Please provide valid plan_features")
-        String features,
+        @NotNull(message = "Please provide valid plan_features")
+        String[] features,
 
         @JsonProperty("plan_privileges")
-        @NotBlank(message = "Please provide valid plan_privileges")
-        String privileges,
+        @NotNull(message = "Please provide valid plan_privileges")
+        String[] privileges,
 
         @JsonProperty("is_visible")
         @NotNull(message = "Please provide valid is_visible")

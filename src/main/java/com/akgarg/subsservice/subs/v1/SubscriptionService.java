@@ -30,7 +30,7 @@ public class SubscriptionService {
 
     public MakeSubscriptionResponse subscribe(final MakeSubscriptionRequest request) {
         final String logId = generateLogId();
-        LOGGER.info("_{} received make subs request: {}", logId, request);
+        LOGGER.info("{} received create subscription request: {}", logId, request);
 
         final Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> {
@@ -75,7 +75,7 @@ public class SubscriptionService {
 
     public GetSubscriptionResponse getSubscriptionByUserId(final String userId) {
         final String logId = generateLogId();
-        LOGGER.info("_{} received get subscription request for userId {}", logId, userId);
+        LOGGER.info("{} received get subscription request for userId {}", logId, userId);
 
         final Optional<Subscription> subscriptionOptional = subscriptionRepository.findFirstByUserIdOrderByExpiresAtDesc(userId);
 

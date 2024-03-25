@@ -15,7 +15,7 @@ final class SubscriptionMapper {
         subscriptionDTO.setPlanId(plan.getId());
         subscriptionDTO.setAmount(subscription.getAmount());
         subscriptionDTO.setCurrency(subscription.getCurrency());
-        subscriptionDTO.setPrivileges(plan.getPrivileges().split(","));
+        subscriptionDTO.setPrivileges(plan.getPrivileges());
         subscriptionDTO.setSubscribedAt(subscription.getSubscribedAt());
         subscriptionDTO.setExpiresAt(subscription.getExpiresAt());
         return subscriptionDTO;

@@ -14,7 +14,7 @@ final class PlanMapper {
                 plan.getDescription(),
                 plan.getCode(),
                 plan.getPrice(),
-                plan.getFeatures().split("\\|\\|")
+                plan.getFeatures()
         );
     }
 

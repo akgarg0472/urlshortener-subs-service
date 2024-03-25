@@ -26,7 +26,7 @@ public class AuthServiceUserDetailsService implements UserDetailsService {
             final var response = restClient
                     .post()
                     .uri("auth-service/api/v1/check-admin")
-                    .body(Map.of("userId", username))
+                    .body(Map.of("user_id", username))
                     .retrieve()
                     .toEntity(Map.class)
                     .getBody();

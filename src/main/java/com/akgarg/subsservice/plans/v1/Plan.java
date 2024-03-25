@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity(name = "subs_plans")
 @Getter
@@ -46,10 +44,23 @@ public class Plan {
     @Column(columnDefinition = "BIGINT DEFAULT 2678400000", nullable = false)
     private long validity;
 
-    @CreatedDate
     private long createdAt;
-
-    @LastModifiedDate
     private long updatedAt;
+
+    public String[] getPrivileges() {
+        return privileges.split(",");
+    }
+
+    public void setPrivileges(final String[] privileges) {
+        this.privileges = String.join(",", privileges);
+    }
+
+    public String[] getFeatures() {
+        return features.split("");
+    }
+
+    public void setFeatures(final String[] features) {
+        this.features = String.join(",", features);
+    }
 
 }

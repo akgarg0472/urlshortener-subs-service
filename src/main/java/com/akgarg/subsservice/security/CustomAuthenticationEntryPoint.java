@@ -26,8 +26,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             final AuthenticationException authException
     ) throws IOException {
         final ApiErrorResponse errorResponse =
-                ApiErrorResponse.unauthenticated("Authentication is required to access resource");
-
+                ApiErrorResponse.unauthenticated("Authentication is required to access requested resource");
         final PrintWriter responseWriter = response.getWriter();
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");

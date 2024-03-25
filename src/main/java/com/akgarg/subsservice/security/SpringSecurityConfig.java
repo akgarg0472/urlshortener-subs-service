@@ -16,7 +16,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @AllArgsConstructor
-public class SecurityConfig {
+public class SpringSecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
@@ -26,10 +26,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+        final String planBaseEndpoint = "/api/v1/subscriptions/plans/**";
+
         final RequestMatcher[] adminOnlyEndpoints = {
-                new AntPathRequestMatcher("/api/v1/subscriptions/plans/**", HttpMethod.POST.name()),
-                new AntPathRequestMatcher("/api/v1/subscriptions/plans/**", HttpMethod.DELETE.name()),
-                new AntPathRequestMatcher("/api/v1/subscriptions/plans/**", HttpMethod.PATCH.name())
+                new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.POST.name()),
+                new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.DELETE.name()),
+                new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.PATCH.name())
         };
 
         http.authorizeHttpRequests(
