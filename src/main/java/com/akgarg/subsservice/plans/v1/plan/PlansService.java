@@ -1,6 +1,8 @@
-package com.akgarg.subsservice.plans.v1;
+package com.akgarg.subsservice.plans.v1.plan;
 
 import com.akgarg.subsservice.exception.BadRequestException;
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilege;
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeService;
 import com.akgarg.subsservice.request.CreatePlanRequest;
 import com.akgarg.subsservice.request.UpdatePlanRequest;
 import com.akgarg.subsservice.response.CreatePlanResponse;
@@ -29,6 +31,7 @@ public class PlansService {
     private static final Logger LOGGER = LogManager.getLogger(PlansService.class);
 
     private final PlanRepository planRepository;
+    private final PlanPrivilegeService planPrivilegeService;
 
     public CreatePlanResponse createPlan(final CreatePlanRequest request) {
         final String logId = SubsUtils.generateLogId();
@@ -41,6 +44,8 @@ public class PlansService {
             return new CreatePlanResponse(HttpStatus.CONFLICT.value(), "Plan already exists with code=" + request.code());
         }
 
+        final List<PlanPrivilege> privileges = planPrivilegeService.getPlanPrivilegesById(request.privileges());
+
         final Plan plan = new Plan();
         plan.setId(UUID.randomUUID().toString().replace("-", ""));
         plan.setIcon(request.icon());
@@ -49,7 +54,7 @@ public class PlansService {
         plan.setCode(request.code());
         plan.setPrice(request.price());
         plan.setFeatures(request.features());
-        plan.setPrivileges(request.privileges());
+        plan.setPrivileges(privileges);
         plan.setVisible(request.visible());
         plan.setValidity(request.validity());
         plan.setCreatedAt(System.currentTimeMillis());
@@ -147,7 +152,11 @@ public class PlansService {
         if (updateFieldIfDifferent(plan::setFeatures, request.getFeatures(), plan.getFeatures())) {
             updated = true;
         }
-        if (updateFieldIfDifferent(plan::setPrivileges, request.getPrivileges(), plan.getPrivileges())) {
+        if (updateFieldIfDifferent(
+                plan::setPrivileges,
+                planPrivilegeService.getPlanPrivilegesById(request.getPrivileges()),
+                plan.getPrivileges()
+        )) {
             updated = true;
         }
         if (updateFieldIfDifferent(plan::setVisible, request.getVisible(), plan.isVisible())) {

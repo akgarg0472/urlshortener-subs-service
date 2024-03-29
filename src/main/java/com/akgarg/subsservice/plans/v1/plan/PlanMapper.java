@@ -1,4 +1,4 @@
-package com.akgarg.subsservice.plans.v1;
+package com.akgarg.subsservice.plans.v1.plan;
 
 final class PlanMapper {
 

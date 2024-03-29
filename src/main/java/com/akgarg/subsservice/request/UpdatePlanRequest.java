@@ -13,7 +13,7 @@ public class UpdatePlanRequest {
     private String code;
     private Double price;
     private String[] features;
-    private String[] privileges;
+    private int[] privileges;
     private Boolean visible;
     private Boolean deleted;
     private Long validity;

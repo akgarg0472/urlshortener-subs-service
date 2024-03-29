@@ -1,4 +1,4 @@
-package com.akgarg.subsservice.plans.v1;
+package com.akgarg.subsservice.plans.v1.plan;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

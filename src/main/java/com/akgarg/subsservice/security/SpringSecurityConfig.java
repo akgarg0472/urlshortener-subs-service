@@ -24,15 +24,22 @@ public class SpringSecurityConfig {
     private final UsernamePasswordExtractionFilter usernamePasswordExtractionFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+    private static RequestMatcher[] getAdminOnlyEndpoints() {
+        final String planPrivilegesBaseEndpoint = "/api/v1/subscriptions/plans/privileges/**";
         final String planBaseEndpoint = "/api/v1/subscriptions/plans/**";
 
-        final RequestMatcher[] adminOnlyEndpoints = {
+        return new RequestMatcher[]{
                 new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.POST.name()),
                 new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.DELETE.name()),
-                new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.PATCH.name())
+                new AntPathRequestMatcher(planBaseEndpoint, HttpMethod.PATCH.name()),
+                new AntPathRequestMatcher(planPrivilegesBaseEndpoint, HttpMethod.POST.name()),
+                new AntPathRequestMatcher(planPrivilegesBaseEndpoint, HttpMethod.GET.name())
         };
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+        final RequestMatcher[] adminOnlyEndpoints = getAdminOnlyEndpoints();
 
         http.authorizeHttpRequests(
                 registry -> {

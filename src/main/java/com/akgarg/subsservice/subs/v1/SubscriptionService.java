@@ -1,8 +1,8 @@
 package com.akgarg.subsservice.subs.v1;
 
 import com.akgarg.subsservice.exception.BadRequestException;
-import com.akgarg.subsservice.plans.v1.Plan;
-import com.akgarg.subsservice.plans.v1.PlanRepository;
+import com.akgarg.subsservice.plans.v1.plan.Plan;
+import com.akgarg.subsservice.plans.v1.plan.PlanRepository;
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
 import com.akgarg.subsservice.request.VerifySubscriptionRequest;
 import com.akgarg.subsservice.response.GetSubscriptionResponse;

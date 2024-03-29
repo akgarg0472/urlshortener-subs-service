@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Arrays;
+
+@SuppressWarnings("all")
 public record CreatePlanRequest(
 
         @JsonProperty("plan_icon")
@@ -38,7 +41,7 @@ public record CreatePlanRequest(
 
         @JsonProperty("plan_privileges")
         @NotNull(message = "Please provide valid plan_privileges")
-        String[] privileges,
+        int[] privileges,
 
         @JsonProperty("is_visible")
         @NotNull(message = "Please provide valid is_visible")
@@ -50,4 +53,21 @@ public record CreatePlanRequest(
         Long validity
 
 ) {
+
+    @Override
+    public String toString() {
+        return "CreatePlanRequest{" +
+                "icon='" + icon + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", code='" + code + '\'' +
+                ", price=" + price +
+                ", currency='" + currency + '\'' +
+                ", features=" + Arrays.toString(features) +
+                ", privileges=" + Arrays.toString(privileges) +
+                ", visible=" + visible +
+                ", validity=" + validity +
+                '}';
+    }
+
 }

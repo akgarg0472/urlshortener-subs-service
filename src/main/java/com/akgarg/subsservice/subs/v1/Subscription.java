@@ -1,6 +1,6 @@
 package com.akgarg.subsservice.subs.v1;
 
-import com.akgarg.subsservice.plans.v1.Plan;
+import com.akgarg.subsservice.plans.v1.plan.Plan;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

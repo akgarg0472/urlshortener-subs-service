@@ -1,8 +1,11 @@
 package com.akgarg.subsservice.subs.v1;
 
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,7 +24,7 @@ public class SubscriptionDTO {
     private String currency;
 
     @JsonProperty("privileges")
-    private String[] privileges;
+    private List<PlanPrivilegeDto> privileges;
 
     @JsonProperty("subscribed_at")
     private long subscribedAt;

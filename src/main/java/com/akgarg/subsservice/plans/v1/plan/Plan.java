@@ -1,10 +1,15 @@
-package com.akgarg.subsservice.plans.v1;
+package com.akgarg.subsservice.plans.v1.plan;
 
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilege;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "subs_plans")
 @Getter
@@ -33,7 +38,8 @@ public class Plan {
     private String features;
 
     @Column(nullable = false)
-    private String privileges;
+    @OneToMany
+    private List<PlanPrivilege> privileges = new ArrayList<>();
 
     @Column(name = "is_visible", columnDefinition = "BOOLEAN DEFAULT true", nullable = false)
     private boolean visible;
@@ -44,23 +50,17 @@ public class Plan {
     @Column(columnDefinition = "BIGINT DEFAULT 2678400000", nullable = false)
     private long validity;
 
+    @Column(name = "created_at", nullable = false)
     private long createdAt;
+
     private long updatedAt;
 
-    public String[] getPrivileges() {
-        return privileges.split(",");
-    }
-
-    public void setPrivileges(final String[] privileges) {
-        this.privileges = String.join(",", privileges);
-    }
-
     public String[] getFeatures() {
-        return features.split("");
+        return features.split("\\|");
     }
 
     public void setFeatures(final String[] features) {
-        this.features = String.join(",", features);
+        this.features = String.join("|", features);
     }
 
 }

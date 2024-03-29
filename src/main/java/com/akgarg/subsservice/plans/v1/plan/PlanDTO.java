@@ -1,5 +1,6 @@
-package com.akgarg.subsservice.plans.v1;
+package com.akgarg.subsservice.plans.v1.plan;
 
+@SuppressWarnings("all")
 public record PlanDTO(
         String icon,
         String id,
