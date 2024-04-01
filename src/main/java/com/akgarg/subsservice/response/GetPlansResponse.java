@@ -1,6 +1,6 @@
 package com.akgarg.subsservice.response;
 
-import com.akgarg.subsservice.plans.v1.plan.PlanDTO;
+import com.akgarg.subsservice.v1.plans.plan.PlanDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;

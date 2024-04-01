@@ -1,6 +1,6 @@
 package com.akgarg.subsservice.response;
 
-import com.akgarg.subsservice.subs.v1.SubscriptionDTO;
+import com.akgarg.subsservice.v1.subs.SubscriptionDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

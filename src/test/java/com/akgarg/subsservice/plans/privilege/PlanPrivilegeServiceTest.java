@@ -1,8 +1,8 @@
 package com.akgarg.subsservice.plans.privilege;
 
 import com.akgarg.subsservice.exception.BadRequestException;
-import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeRepository;
-import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeService;
+import com.akgarg.subsservice.v1.plans.privilege.db.PlanPrivilegeRepository;
+import com.akgarg.subsservice.v1.plans.privilege.PlanPrivilegeService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

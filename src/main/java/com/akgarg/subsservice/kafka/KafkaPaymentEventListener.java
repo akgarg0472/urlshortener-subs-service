@@ -3,7 +3,7 @@ package com.akgarg.subsservice.kafka;
 import com.akgarg.subsservice.exception.BadRequestException;
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
 import com.akgarg.subsservice.response.MakeSubscriptionResponse;
-import com.akgarg.subsservice.subs.v1.SubscriptionService;
+import com.akgarg.subsservice.v1.subs.SubscriptionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
