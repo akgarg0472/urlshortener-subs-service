@@ -1,6 +1,7 @@
 package com.akgarg.subsservice.plans.v1.plan;
 
 import com.akgarg.subsservice.exception.BadRequestException;
+import com.akgarg.subsservice.plans.v1.plan.cache.PlanCache;
 import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilege;
 import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeService;
 import com.akgarg.subsservice.request.CreatePlanRequest;
@@ -13,6 +14,7 @@ import com.akgarg.subsservice.utils.SubsUtils;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -26,12 +28,13 @@ import java.util.function.Consumer;
 
 @Service
 @AllArgsConstructor
-public class PlansService {
+public class PlansService implements InitializingBean {
 
     private static final Logger LOGGER = LogManager.getLogger(PlansService.class);
 
     private final PlanRepository planRepository;
     private final PlanPrivilegeService planPrivilegeService;
+    private final PlanCache planCache;
 
     public CreatePlanResponse createPlan(final CreatePlanRequest request) {
         final String logId = SubsUtils.generateLogId();
@@ -59,25 +62,42 @@ public class PlansService {
         plan.setValidity(request.validity());
         plan.setCreatedAt(System.currentTimeMillis());
 
-        planRepository.save(plan);
+        final Plan savedPlan = planRepository.save(plan);
 
-        LOGGER.info("{} plan created successfully: {}", logId, plan);
+        LOGGER.info("{} plan created successfully: {}", logId, savedPlan);
+
+        planCache.addOrUpdatePlan(savedPlan);
 
         return new CreatePlanResponse(HttpStatus.CREATED.value(), "Plan created successfully");
     }
 
-    public GetPlansResponse getPlans(final int limit) {
+    public GetPlansResponse getPlans(final int page, final int limit) {
+        final String logId = SubsUtils.generateLogId();
+        LOGGER.info("{} received request to get plans", logId);
+
         final PageRequest pageRequest = PageRequest.of(
-                0,
+                page,
                 limit,
                 Sort.by("createdAt").descending()
         );
 
-        final List<Plan> plans = planRepository.findByVisibleAndDeleted(
+        final List<Plan> plans = planCache.getAllPlans(
+                page * limit,
+                limit,
                 true,
-                false,
-                pageRequest
+                false
         );
+
+        if (plans.isEmpty()) {
+            LOGGER.info("{} fetching plans from database", logId);
+
+            final List<Plan> plansList = planRepository.findByVisibleAndDeleted(
+                    true,
+                    false,
+                    pageRequest
+            );
+            plans.addAll(plansList);
+        }
 
         final List<PlanDTO> planDTOS = plans.stream()
                 .map(PlanMapper::toDto)
@@ -95,6 +115,9 @@ public class PlansService {
         LOGGER.info("{}: request received to update plan with id: {} -> {}", logId, planId, request);
 
         final Plan plan = getPlanByPlanId(planId);
+
+        LOGGER.debug("{} existing plan -> {}", logId, plan);
+
         final boolean updated = updatePlanFields(plan, request);
 
         if (!updated) {
@@ -103,8 +126,13 @@ public class PlansService {
         }
 
         plan.setUpdatedAt(System.currentTimeMillis());
-        planRepository.save(plan);
+
+        final Plan updatedPlan = planRepository.save(plan);
+
         LOGGER.info("{}: plan updated successfully", logId);
+
+        planCache.addOrUpdatePlan(updatedPlan);
+
         return new UpdatePlanResponse(HttpStatus.OK.value(), "Plan updated successfully");
     }
 
@@ -124,9 +152,11 @@ public class PlansService {
         plan.setDeleted(true);
         plan.setVisible(false);
 
-        planRepository.save(plan);
+        final Plan deletedPlan = planRepository.save(plan);
 
         LOGGER.info("{}: plan deleted successfully", logId);
+
+        planCache.addOrUpdatePlan(deletedPlan);
 
         return new DeletePlanResponse(
                 HttpStatus.OK.value(),
@@ -141,9 +171,6 @@ public class PlansService {
             updated = true;
         }
         if (updateFieldIfDifferent(plan::setDescription, request.getDescription(), plan.getDescription())) {
-            updated = true;
-        }
-        if (updateFieldIfDifferent(plan::setCode, request.getCode(), plan.getCode())) {
             updated = true;
         }
         if (updateFieldIfDifferent(plan::setPrice, request.getPrice(), plan.getPrice())) {
@@ -165,6 +192,9 @@ public class PlansService {
         if (updateFieldIfDifferent(plan::setValidity, request.getValidity(), plan.getValidity())) {
             updated = true;
         }
+        if (updateFieldIfDifferent(plan::setDeleted, request.getDeleted(), plan.isDeleted())) {
+            updated = true;
+        }
 
         return updated;
     }
@@ -183,6 +213,14 @@ public class PlansService {
                         new String[]{"No plan found with id=%s".formatted(planId)},
                         "Plan not found"
                 ));
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        LOGGER.info("Populating plan cache");
+        planRepository
+                .findAll()
+                .forEach(planCache::addOrUpdatePlan);
     }
 
 }

@@ -31,8 +31,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleGenericException(final Exception e) {
         LOGGER.error(
                 "Error in processing request: {}",
-                Map.of("exception_class", e.getClass().getName(), "exception_msg", e.getMessage()),
-                e
+                Map.of("exception_class", e.getClass().getName(), "exception_msg", e.getMessage())
         );
         final ApiErrorResponse errorResponse = switch (e) {
             case HttpRequestMethodNotSupportedException ex ->

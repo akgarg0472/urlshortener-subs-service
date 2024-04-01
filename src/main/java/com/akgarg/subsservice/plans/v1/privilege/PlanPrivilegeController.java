@@ -1,5 +1,6 @@
 package com.akgarg.subsservice.plans.v1.privilege;
 
+import com.akgarg.subsservice.response.AddPlanPrivilegeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,12 @@ public class PlanPrivilegeController {
     private final PlanPrivilegeService planPrivilegeService;
 
     @PostMapping("/")
-    public ResponseEntity<String> addPlanPrivilege(@RequestBody final Map<String, String> requestBody) {
+    public ResponseEntity<AddPlanPrivilegeResponse> addPlanPrivilege(@RequestBody final Map<String, String> requestBody) {
         final String privilegeName = requestBody.get("privilege_name");
-        planPrivilegeService.addPrivilege(privilegeName);
-        return ResponseEntity.ok("Privilege added successfully");
+        final var response = planPrivilegeService.addPrivilege(privilegeName);
+        return ResponseEntity
+                .status(response.statusCode())
+                .body(response);
     }
 
     @GetMapping("/")

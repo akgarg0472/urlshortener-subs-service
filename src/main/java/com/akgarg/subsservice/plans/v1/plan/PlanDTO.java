@@ -1,5 +1,9 @@
 package com.akgarg.subsservice.plans.v1.plan;
 
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeDto;
+
+import java.util.List;
+
 @SuppressWarnings("all")
 public record PlanDTO(
         String icon,
@@ -8,6 +12,7 @@ public record PlanDTO(
         String description,
         String code,
         Double price,
-        String[] features
+        String[] features,
+        List<PlanPrivilegeDto> privileges
 ) {
 }

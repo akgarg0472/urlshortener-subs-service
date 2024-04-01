@@ -1,14 +1,12 @@
 package com.akgarg.subsservice.plans.v1.plan;
 
 import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilege;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity(name = "subs_plans")
@@ -38,7 +36,7 @@ public class Plan {
     private String features;
 
     @Column(nullable = false)
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<PlanPrivilege> privileges = new ArrayList<>();
 
     @Column(name = "is_visible", columnDefinition = "BOOLEAN DEFAULT true", nullable = false)
@@ -61,6 +59,25 @@ public class Plan {
 
     public void setFeatures(final String[] features) {
         this.features = String.join("|", features);
+    }
+
+    @Override
+    public String toString() {
+        return "Plan{" +
+                "id='" + id + '\'' +
+                ", icon='" + icon + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", code='" + code + '\'' +
+                ", price=" + price +
+                ", features='" + Arrays.toString(getFeatures()) + '\'' +
+                ", privileges=" + privileges +
+                ", visible=" + visible +
+                ", deleted=" + deleted +
+                ", validity=" + validity +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 
 }

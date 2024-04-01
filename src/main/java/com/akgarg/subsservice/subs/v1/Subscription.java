@@ -17,7 +17,7 @@ public class Subscription {
     @Column(nullable = false)
     private String userId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Plan plan;
 
     @Column(nullable = false)

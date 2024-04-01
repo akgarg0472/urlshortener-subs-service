@@ -34,8 +34,11 @@ public class PlansController {
     }
 
     @GetMapping
-    public ResponseEntity<GetPlansResponse> getPlans(@RequestParam(name = "limit", defaultValue = "2") final int limit) {
-        final GetPlansResponse response = plansService.getPlans(limit);
+    public ResponseEntity<GetPlansResponse> getPlans(
+            @RequestParam(value = "page", defaultValue = "0") final int page,
+            @RequestParam(name = "limit", defaultValue = "2") final int limit
+    ) {
+        final GetPlansResponse response = plansService.getPlans(page, limit);
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 

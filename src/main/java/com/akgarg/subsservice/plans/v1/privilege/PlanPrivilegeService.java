@@ -1,13 +1,18 @@
 package com.akgarg.subsservice.plans.v1.privilege;
 
 import com.akgarg.subsservice.exception.BadRequestException;
+import com.akgarg.subsservice.plans.v1.privilege.cache.PlanPrivilegeCache;
+import com.akgarg.subsservice.response.AddPlanPrivilegeResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,19 +21,44 @@ public class PlanPrivilegeService {
     private static final Logger LOGGER = LogManager.getLogger(PlanPrivilegeService.class);
 
     private final PlanPrivilegeRepository privilegeRepository;
+    private final PlanPrivilegeCache planPrivilegeCache;
 
-    public void addPrivilege(final String privilege) {
+    public AddPlanPrivilegeResponse addPrivilege(final String privilege) {
         LOGGER.info("Request received to add plan privilege: {}", privilege);
         validatePlanPrivilege(privilege);
+
+        final Optional<PlanPrivilege> privilegeOptional = privilegeRepository.findByPrivilegeNameIgnoreCase(privilege);
+
+        if (privilegeOptional.isPresent()) {
+            LOGGER.warn("Plan privilege '{}' already exists", privilege);
+            return new AddPlanPrivilegeResponse(
+                    HttpStatus.CONFLICT.value(),
+                    "Plan privilege '%s' already exists".formatted(privilege)
+            );
+        }
 
         final PlanPrivilege planPrivilege = new PlanPrivilege();
         planPrivilege.setPrivilegeName(privilege);
         planPrivilege.setCreatedAt(System.currentTimeMillis());
+
         final PlanPrivilege savedPrivilege = privilegeRepository.save(planPrivilege);
+
         LOGGER.info("Plan privilege created successfully: {}", savedPrivilege);
+
+        planPrivilegeCache.addOrUpdatePlanPrivilege(savedPrivilege);
+
+        return new AddPlanPrivilegeResponse(
+                HttpStatus.CREATED.value(),
+                "Plan privilege '%s' added successfully".formatted(privilege)
+        );
+
     }
 
     public List<PlanPrivilege> getPlanPrivilegesById(final int[] ids) {
+        if (ids == null || ids.length == 0) {
+            return Collections.emptyList();
+        }
+
         final List<Integer> idList = new ArrayList<>();
         for (final int id : ids) {
             idList.add(id);
@@ -37,8 +67,13 @@ public class PlanPrivilegeService {
     }
 
     public List<PlanPrivilegeDto> getPlanPrivileges() {
-        return this.privilegeRepository
-                .findAll()
+        final List<PlanPrivilege> privileges = planPrivilegeCache.getAllPlanPrivileges();
+
+        if (privileges.isEmpty()) {
+            privileges.addAll(this.privilegeRepository.findAll());
+        }
+
+        return privileges
                 .stream()
                 .map(PlanPrivilegeDto::fromPlanPrivilege)
                 .toList();

@@ -49,12 +49,13 @@ public class SubscriptionService {
             LOGGER.error("{} subscription already exists for userId={}, subscriptionId={}", logId, request.userId(), subscriptionId);
             return new MakeSubscriptionResponse(
                     HttpStatus.CONFLICT.value(),
-                    "Subscription already exists with subscription id %s".formatted(subscriptionId)
+                    "Subscription already exists with subscription id %s".formatted(subscriptionId),
+                    null
             );
         }
 
         final Subscription subscription = new Subscription();
-        subscription.setId(UUID.randomUUID().toString());
+        subscription.setId(UUID.randomUUID().toString().replace("-", ""));
         subscription.setAmount(request.amount());
         subscription.setCurrency(request.currency());
         subscription.setExpiresAt(timestamp + plan.getValidity());
@@ -63,13 +64,14 @@ public class SubscriptionService {
         subscription.setDescription(request.description());
         subscription.setPlan(plan);
 
-        subscriptionRepository.save(subscription);
+        final Subscription createdSubscription = subscriptionRepository.save(subscription);
 
         LOGGER.info("{} subscription successful for userId={} for planId={}", logId, request.userId(), request.planId());
 
         return new MakeSubscriptionResponse(
                 HttpStatus.CREATED.value(),
-                "Subscription successful with id=%s".formatted(subscription.getId())
+                "Subscription successful",
+                SubscriptionMapper.toDto(createdSubscription)
         );
     }
 
@@ -104,7 +106,7 @@ public class SubscriptionService {
 
         return new GetSubscriptionResponse(
                 HttpStatus.OK.value(),
-                "Subscription found",
+                null,
                 subscriptionDTO
         );
     }

@@ -1,5 +1,7 @@
 package com.akgarg.subsservice.plans.v1.plan;
 
+import com.akgarg.subsservice.plans.v1.privilege.PlanPrivilegeDto;
+
 final class PlanMapper {
 
     private PlanMapper() {
@@ -14,7 +16,8 @@ final class PlanMapper {
                 plan.getDescription(),
                 plan.getCode(),
                 plan.getPrice(),
-                plan.getFeatures()
+                plan.getFeatures(),
+                plan.getPrivileges().stream().map(PlanPrivilegeDto::fromPlanPrivilege).toList()
         );
     }
 
