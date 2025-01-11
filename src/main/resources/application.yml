@@ -1,7 +1,16 @@
 spring:
   application:
-    name: subscription-service
+    name: urlshortener-subscription-service
   profiles:
     active: dev
   jackson:
     default-property-inclusion: non_null
+
+server:
+  port: 9090
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

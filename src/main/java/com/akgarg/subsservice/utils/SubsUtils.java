@@ -4,8 +4,6 @@ import com.akgarg.subsservice.exception.BadRequestException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindingResult;
 
-import java.util.UUID;
-
 public final class SubsUtils {
 
     private SubsUtils() {
@@ -24,10 +22,6 @@ public final class SubsUtils {
 
             throw new BadRequestException(errors, "Request Validation Failed");
         }
-    }
-
-    public static String generateLogId() {
-        return UUID.randomUUID().toString().replace("-", "");
     }
 
 }

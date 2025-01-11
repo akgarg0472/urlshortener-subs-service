@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.2</version>
+        <version>3.4.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -14,11 +14,11 @@
     <artifactId>subs-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>subs-service</name>
-    <description>subs-service</description>
+    <description>Subscription service for URL shortener</description>
 
     <properties>
         <java.version>21</java.version>
-        <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -94,9 +94,10 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
@@ -105,9 +106,11 @@
             </exclusions>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>5.2.0</version>
         </dependency>
 
         <dependency>

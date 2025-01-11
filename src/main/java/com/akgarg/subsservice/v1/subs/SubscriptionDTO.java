@@ -1,35 +1,48 @@
 package com.akgarg.subsservice.v1.subs;
 
-import com.akgarg.subsservice.v1.plans.privilege.PlanPrivilegeDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
 public class SubscriptionDTO {
 
-    @JsonProperty("subscription_id")
+    @JsonProperty("id")
     private String id;
 
-    @JsonProperty("plan_id")
-    private String planId;
+    @JsonProperty("user_id")
+    private String userId;
+
+    @JsonProperty("pack_id")
+    private String packId;
 
     @JsonProperty("amount")
-    private Long amount;
+    private Double amount;
 
     @JsonProperty("currency")
     private String currency;
 
-    @JsonProperty("privileges")
-    private List<PlanPrivilegeDto> privileges;
+    @JsonProperty("status")
+    private SubscriptionStatus status;
 
     @JsonProperty("subscribed_at")
     private long subscribedAt;
 
-    @JsonProperty("expiring_at")
+    @JsonProperty("expires_at")
     private long expiresAt;
+
+    public static SubscriptionDTO fromSubscription(final Subscription subscription) {
+        final var subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.setId(subscription.getId());
+        subscriptionDTO.setUserId(subscription.getUserId());
+        subscriptionDTO.setPackId(subscription.getPackId());
+        subscriptionDTO.setAmount(subscription.getAmount());
+        subscriptionDTO.setCurrency(subscription.getCurrency());
+        subscriptionDTO.setStatus(subscription.getStatus());
+        subscriptionDTO.setSubscribedAt(subscription.getSubscribedAt());
+        subscriptionDTO.setExpiresAt(subscription.getExpiresAt());
+        return subscriptionDTO;
+    }
 
 }

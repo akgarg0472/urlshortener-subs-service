@@ -6,20 +6,25 @@ import jakarta.validation.constraints.NotBlank;
 
 public record MakeSubscriptionRequest(
 
-        @NotBlank(message = "user_id is mandatory & can't be empty")
+        @NotBlank(message = "user_id can't be null or empty")
         @JsonProperty("user_id")
         String userId,
 
-        @NotBlank(message = "plan_id is mandatory & can't be empty")
-        @JsonProperty("plan_id")
-        String planId,
+        @NotBlank(message = "pack_id can't be null or empty")
+        @JsonProperty("pack_id")
+        String packId,
 
-        @Min(value = 1, message = "amount can't be less than 1")
-        Long amount,
+        @NotBlank(message = "payment_id can't be null or empty")
+        @JsonProperty("payment_id")
+        String paymentId,
 
-        @NotBlank(message = "currency is mandatory & can't be empty")
+        @Min(value = 1, message = "amount can't be null or empty")
+        Double amount,
+
+        @NotBlank(message = "currency can't be null or empty")
         String currency,
 
+        @NotBlank(message = "description can't be null or empty")
         String description
 ) {
 }

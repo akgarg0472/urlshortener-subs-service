@@ -1,31 +1,39 @@
 package com.akgarg.subsservice.v1.subs;
 
-import com.akgarg.subsservice.v1.plans.plan.Plan;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
-@Entity(name = "subscriptions")
+@Entity
 @Getter
 @Setter
+@Table(name = "subscriptions", indexes = {
+        @Index(name = "idx_subscription_user_id", columnList = "user_id"),
+        @Index(name = "idx_subscription_user_id_pack_id", columnList = "user_id,pack_id")
+})
 public class Subscription {
 
     @Id
     private String id;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    private Plan plan;
+    @Column(name = "pack_id", nullable = false)
+    private String packId;
 
     @Column(nullable = false)
-    private Long amount;
+    private Double amount;
 
     @Column(nullable = false)
     private String currency;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private SubscriptionStatus status;
+
+    @Column(nullable = false)
     private String description;
 
     @CreatedDate
