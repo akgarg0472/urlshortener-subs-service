@@ -49,6 +49,9 @@ public class SubscriptionPack {
     @Column(name = "deleted")
     private boolean deleted;
 
+    @Column(name = "is_default")
+    private Boolean defaultPack;
+
     @Column(name = "created_at", nullable = false)
     private Long createdAt;
 

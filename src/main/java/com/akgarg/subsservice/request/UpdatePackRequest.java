@@ -46,15 +46,9 @@ public record UpdatePackRequest(
         Boolean visible,
 
         @JsonProperty("selected")
-        Boolean selected
-) {
-    public UpdatePackRequest {
-        if (visible == null) {
-            visible = Boolean.TRUE;
-        }
+        Boolean selected,
 
-        if (selected == null) {
-            selected = Boolean.FALSE;
-        }
-    }
+        @JsonProperty("default_pack")
+        Boolean defaultPack
+) {
 }

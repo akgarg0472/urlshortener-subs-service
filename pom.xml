@@ -12,7 +12,7 @@
 
     <groupId>com.akgarg</groupId>
     <artifactId>subs-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>subs-service</name>
     <description>Subscription service for URL shortener</description>
 
@@ -45,6 +45,7 @@
             </exclusions>
         </dependency>
 
+        <!--suppress VulnerableLibrariesLocal -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
@@ -133,6 +134,8 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+
+        <finalName>UrlShortenerSubscriptionService</finalName>
     </build>
 
 </project>

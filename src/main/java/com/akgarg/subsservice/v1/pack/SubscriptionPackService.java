@@ -233,6 +233,10 @@ public class SubscriptionPackService {
             updated = true;
         }
 
+        if (request.defaultPack() != null && updateFieldIfDifferent(pack::setDefaultPack, request.defaultPack(), pack.getDefaultPack())) {
+            updated = true;
+        }
+
         return updated;
     }
 
@@ -264,6 +268,7 @@ public class SubscriptionPackService {
         pack.setPrivileges(request.privileges());
         pack.setSelected(request.selected());
         pack.setDeleted(false);
+        pack.setDefaultPack(request.defaultPack());
         return pack;
     }
 

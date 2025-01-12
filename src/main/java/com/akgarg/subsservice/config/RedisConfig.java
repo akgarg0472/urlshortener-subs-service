@@ -21,6 +21,7 @@ public class RedisConfig {
         configuration.setHostName(environment.getProperty("spring.data.redis.host", "localhost"));
         configuration.setPort(Integer.parseInt(environment.getProperty("spring.data.redis.port", "6379")));
         configuration.setDatabase(Integer.parseInt(environment.getProperty("spring.data.redis.database", "8")));
+        configuration.setUsername(environment.getProperty("spring.data.redis.username", ""));
         configuration.setPassword(environment.getProperty("spring.data.redis.password", ""));
         return new JedisConnectionFactory(configuration);
     }

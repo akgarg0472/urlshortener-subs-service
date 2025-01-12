@@ -15,7 +15,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Profile({"prod", "PROD"})
+@Profile("prod")
 public class KafkaNotificationService implements NotificationService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -30,6 +30,7 @@ public class KafkaNotificationService implements NotificationService {
         subscriptionEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_SUCCESS);
         subscriptionEvent.setSubscription(subscriptionDTO);
         sendEvent(requestId, subscriptionEvent);
+        // TODO: add email notification
     }
 
     @Override

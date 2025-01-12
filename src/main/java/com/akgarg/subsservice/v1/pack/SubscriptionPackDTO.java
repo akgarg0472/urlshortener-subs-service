@@ -13,7 +13,9 @@ public record SubscriptionPackDTO(
         String currency,
         String description,
         List<String> features,
-        boolean selected
+        String privileges,
+        boolean selected,
+        @JsonProperty("default_pack") boolean defaultPack
 ) {
 
     public static SubscriptionPackDTO fromSubscriptionPack(final SubscriptionPack pack) {
@@ -26,7 +28,9 @@ public record SubscriptionPackDTO(
                 pack.getCurrency(),
                 pack.getDescription(),
                 pack.getFeatures(),
-                pack.getSelected()
+                String.join("~", pack.getPrivileges()),
+                pack.getSelected(),
+                pack.getDefaultPack()
         );
     }
 

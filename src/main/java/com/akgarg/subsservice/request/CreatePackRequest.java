@@ -46,7 +46,10 @@ public record CreatePackRequest(
         Boolean visible,
 
         @JsonProperty("selected")
-        Boolean selected
+        Boolean selected,
+
+        @JsonProperty("default_pack")
+        Boolean defaultPack
 
 ) {
     public CreatePackRequest {
@@ -56,6 +59,10 @@ public record CreatePackRequest(
 
         if (selected == null) {
             selected = Boolean.FALSE;
+        }
+
+        if (defaultPack == null) {
+            defaultPack = Boolean.FALSE;
         }
     }
 }
