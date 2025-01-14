@@ -26,8 +26,11 @@ public class SubscriptionDTO {
     @JsonProperty("status")
     private SubscriptionStatus status;
 
-    @JsonProperty("subscribed_at")
-    private long subscribedAt;
+    @JsonProperty("is_default")
+    private boolean defaultSubscription;
+
+    @JsonProperty("activated_at")
+    private long activatedAt;
 
     @JsonProperty("expires_at")
     private long expiresAt;
@@ -39,8 +42,8 @@ public class SubscriptionDTO {
         subscriptionDTO.setPackId(subscription.getPackId());
         subscriptionDTO.setAmount(subscription.getAmount());
         subscriptionDTO.setCurrency(subscription.getCurrency());
-        subscriptionDTO.setStatus(subscription.getStatus());
-        subscriptionDTO.setSubscribedAt(subscription.getSubscribedAt());
+        subscriptionDTO.setStatus(SubscriptionStatus.valueOf(subscription.getStatus()));
+        subscriptionDTO.setActivatedAt(subscription.getSubscribedAt());
         subscriptionDTO.setExpiresAt(subscription.getExpiresAt());
         return subscriptionDTO;
     }

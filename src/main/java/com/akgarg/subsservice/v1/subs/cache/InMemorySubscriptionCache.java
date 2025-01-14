@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +28,7 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     private final ScheduledExecutorService evictionExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private final Map<String, SubscriptionDTO> subscriptions = new HashMap<>();
+    private final Map<String, Collection<SubscriptionDTO>> groupedSubscriptions = new HashMap<>();
 
     /**
      * Starts the eviction task after the bean is initialized.
@@ -49,9 +47,24 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public Optional<SubscriptionDTO> getSubscriptionByUserId(final String requestId, final String userId) {
+    public Optional<SubscriptionDTO> getActiveSubscriptionByUserId(final String requestId, final String userId) {
         log.info("[{}] Getting subscription {} from cache", requestId, Objects.requireNonNull(userId));
         return Optional.ofNullable(subscriptions.get(userId));
+    }
+
+    @Override
+    public void addUserSubscriptions(final String requestId, final String userId, final Collection<SubscriptionDTO> subscriptions) {
+        log.info("[{}] Adding all subscription to cache for userId {}", requestId, Objects.requireNonNull(userId));
+        groupedSubscriptions.put(userId, subscriptions);
+    }
+
+    @Override
+    public Collection<SubscriptionDTO> getAllSubscriptionsByUserId(final String requestId, final String userId) {
+        log.debug("[{}] Getting all subscriptions from cache", requestId);
+        return groupedSubscriptions.getOrDefault(userId, Collections.emptyList())
+                .stream()
+                .sorted(Comparator.comparing(SubscriptionDTO::getActivatedAt).reversed())
+                .toList();
     }
 
     /**

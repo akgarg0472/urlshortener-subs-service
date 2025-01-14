@@ -12,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public enum SubscriptionPackValidity {
 
+    DEFAULT("default", 100 * 365L * 24 * 60 * 60 * 1000),
     MONTHLY("month", 30L * 24 * 60 * 60 * 1000),
     ANNUAL("annual", 365L * 24 * 60 * 60 * 1000);
 

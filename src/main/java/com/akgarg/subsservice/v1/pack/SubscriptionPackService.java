@@ -1,6 +1,5 @@
 package com.akgarg.subsservice.v1.pack;
 
-import com.akgarg.subsservice.notification.NotificationService;
 import com.akgarg.subsservice.request.CreatePackRequest;
 import com.akgarg.subsservice.request.UpdatePackRequest;
 import com.akgarg.subsservice.response.CreatePackResponse;
@@ -29,7 +28,6 @@ public class SubscriptionPackService {
 
     private final SubscriptionPackDatabaseService subscriptionPackDatabaseService;
     private final SubscriptionPackCache subscriptionPackCache;
-    private final NotificationService notificationService;
 
     public CreatePackResponse createPack(final String requestId, final CreatePackRequest request) {
         log.info("[{}] create pack request received: {}", requestId, request);
@@ -55,8 +53,6 @@ public class SubscriptionPackService {
         log.info("[{}] pack created successfully: {}", requestId, savedPack);
 
         final var subscriptionPackDTO = SubscriptionPackDTO.fromSubscriptionPack(savedPack);
-
-        notificationService.sendSubscriptionPackCreated(requestId, subscriptionPackDTO);
 
         return new CreatePackResponse(HttpStatus.CREATED.value(),
                 "Pack created successfully",
@@ -104,6 +100,23 @@ public class SubscriptionPackService {
         );
     }
 
+    public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
+        log.info("[{}] retrieving default subscription pack", requestId);
+
+        var subscriptionPack = subscriptionPackCache.getDefaultSubscriptionPack(requestId);
+
+        if (subscriptionPack.isPresent()) {
+            log.debug("[{}] retrieved default subscription pack from cache", requestId);
+            return subscriptionPack;
+        }
+
+        subscriptionPack = subscriptionPackDatabaseService.findDefaultSubscriptionPack(requestId);
+
+        subscriptionPack.ifPresent(pack -> subscriptionPackCache.addOrUpdatePack(requestId, pack));
+
+        return subscriptionPack;
+    }
+
     public UpdatePackResponse updatePack(final String requestId, final String packId, final UpdatePackRequest request) {
         log.info("[{}] request received to update pack with id: {} -> {}", requestId, packId, request);
 
@@ -140,8 +153,6 @@ public class SubscriptionPackService {
         subscriptionPackCache.addOrUpdatePack(requestId, updatedPack);
 
         log.info("[{}] pack updated successfully: {}", requestId, updatedPackDTO);
-
-        notificationService.sendSubscriptionPackUpdated(requestId, updatedPackDTO);
 
         return new UpdatePackResponse(HttpStatus.OK.value(),
                 "Pack updated successfully",
@@ -184,8 +195,6 @@ public class SubscriptionPackService {
         subscriptionPackCache.deletePack(requestId, packId);
 
         final var subscriptionPackDTO = SubscriptionPackDTO.fromSubscriptionPack(deletedPack);
-
-        notificationService.sendSubscriptionPackDeleted(requestId, subscriptionPackDTO);
 
         return new DeletePackResponse(
                 HttpStatus.OK.value(),

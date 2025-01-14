@@ -6,39 +6,46 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
 @Profile({"dev", "DEV"})
 public class InMemorySubscriptionDatabaseService implements SubscriptionDatabaseService {
 
-    private final Map<String, Subscription> subscriptions = new HashMap<>();
+    private final Collection<Subscription> subscriptions = new ArrayList<>();
 
     @Override
     public Optional<Subscription> findActiveSubscription(final String requestId, final String userId) {
         log.info("[{}] finding active subscription for user {}", requestId, userId);
-        return subscriptions.values()
+        return subscriptions
                 .stream()
-                .filter(subscription -> subscription.getUserId().equals(userId) && subscription.getStatus() == SubscriptionStatus.ACTIVE)
+                .filter(subscription -> subscription.getUserId().equals(userId) &&
+                        SubscriptionStatus.ACTIVE.name().equalsIgnoreCase(subscription.getStatus()))
                 .findFirst();
     }
 
     @Override
     public Subscription addSubscription(final String requestId, final Subscription subscription) {
         log.info("[{}] adding new subscription {}", requestId, subscription);
-        subscriptions.put(subscription.getUserId(), subscription);
+        subscriptions.add(subscription);
         return subscription;
     }
 
     @Override
     public List<Subscription> findAllActiveSubscriptions() {
-        return subscriptions.values()
+        return subscriptions
                 .stream()
-                .filter(subscription -> subscription.getStatus() == SubscriptionStatus.ACTIVE)
+                .filter(subscription -> SubscriptionStatus.ACTIVE.name().equalsIgnoreCase(subscription.getStatus()))
+                .toList();
+    }
+
+    @Override
+    public Collection<Subscription> findAllSubscriptionsForUserId(final String requestId, final String userId) {
+        return subscriptions
+                .stream()
+                .filter(subscription -> subscription.getUserId().equalsIgnoreCase(userId))
+                .sorted(Comparator.comparing(Subscription::getSubscribedAt).reversed())
                 .toList();
     }
 

@@ -15,4 +15,6 @@ public interface SubscriptionPackCache {
 
     void deletePack(String requestId, String packId);
 
+    Optional<SubscriptionPack> getDefaultSubscriptionPack(String requestId);
+
 }

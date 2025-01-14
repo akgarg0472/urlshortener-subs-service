@@ -4,8 +4,8 @@ import com.akgarg.subsservice.exception.BadRequestException;
 import com.akgarg.subsservice.exception.SubscriptionException;
 import com.akgarg.subsservice.notification.NotificationService;
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
-import com.akgarg.subsservice.response.GetSubscriptionResponse;
-import com.akgarg.subsservice.response.MakeSubscriptionResponse;
+import com.akgarg.subsservice.response.*;
+import com.akgarg.subsservice.v1.pack.SubscriptionPack;
 import com.akgarg.subsservice.v1.pack.SubscriptionPackService;
 import com.akgarg.subsservice.v1.subs.cache.SubscriptionCache;
 import com.akgarg.subsservice.v1.subs.db.SubscriptionDatabaseService;
@@ -28,6 +28,54 @@ public class SubscriptionService {
     private final NotificationService notificationService;
     private final SubscriptionCache subscriptionCache;
 
+    public void subscribeDefaultPack(final String requestId, final String userId) {
+        log.info("[{}] Subscribing default pack", requestId);
+
+        final var activeSubscription = getActiveSubscriptionForUserId(requestId, userId);
+
+        if (activeSubscription.isPresent()) {
+            log.warn("[{}] Active subscription found", requestId);
+            throw new SubscriptionException(
+                    new String[]{"Active subscription found"},
+                    HttpStatus.CONFLICT.value(),
+                    "Failed to subscribe default pack"
+            );
+        }
+
+        final var defaultSubscriptionPack = subscriptionPackService.getDefaultSubscriptionPack(requestId);
+
+        if (defaultSubscriptionPack.isEmpty()) {
+            log.warn("[{}] Default subscription pack not found", requestId);
+            throw new SubscriptionException(
+                    new String[]{"No default subscription pack found"},
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to subscribe default pack"
+            );
+        }
+
+        final var subscriptionPack = defaultSubscriptionPack.get();
+        final var timestamp = System.currentTimeMillis();
+
+        final var subscription = new Subscription();
+        subscription.setId(generateSubscriptionId(userId, subscriptionPack.getId()));
+        subscription.setPackId(subscriptionPack.getId());
+        subscription.setUserId(userId);
+        subscription.setCurrency(subscriptionPack.getCurrency());
+        subscription.setDescription("Default Free Subscription");
+        subscription.setAmount(subscriptionPack.getPrice());
+        subscription.setSubscribedAt(timestamp);
+        subscription.setDefaultSubscription(Boolean.TRUE);
+        subscription.setStatus(SubscriptionStatus.ACTIVE.name());
+        subscription.setExpiresAt(timestamp + subscriptionPack.getValidityDuration());
+
+        final var createdSubscription = subscriptionDatabaseService.addSubscription(requestId, subscription);
+        final var subscriptionDTO = SubscriptionDTO.fromSubscription(createdSubscription);
+
+        subscriptionCache.addSubscription(requestId, subscriptionDTO);
+
+        log.info("{} default subscription successful for userId={}", requestId, userId);
+    }
+
     public MakeSubscriptionResponse subscribe(final String requestId, final MakeSubscriptionRequest request) {
         log.info("{} received create subscription request: {}", requestId, request);
 
@@ -44,9 +92,11 @@ public class SubscriptionService {
         final var timestamp = System.currentTimeMillis();
         final var activeSubscription = subscriptionDatabaseService.findActiveSubscription(requestId, request.userId());
 
-        if (activeSubscription.isPresent() && activeSubscription.get().getExpiresAt() > timestamp) {
+        if (activeSubscription.isPresent() &&
+                activeSubscription.get().getExpiresAt() > timestamp &&
+                Boolean.FALSE.equals(activeSubscription.get().getDefaultSubscription())) {
             final var subscriptionId = activeSubscription.get().getId();
-            log.warn("{} subscription already exists for userId={}, subscriptionId={}", requestId, request.userId(), subscriptionId);
+            log.warn("{} active subscription found for userId={}, subscriptionId={}", requestId, request.userId(), subscriptionId);
             return new MakeSubscriptionResponse(
                     HttpStatus.CONFLICT.value(),
                     "Subscription already exists with subscription id %s".formatted(subscriptionId),
@@ -55,7 +105,7 @@ public class SubscriptionService {
         }
 
         final var subscription = new Subscription();
-        subscription.setId(UUID.randomUUID().toString().replace("-", ""));
+        subscription.setId(generateSubscriptionId(request.userId(), request.packId()));
         subscription.setAmount(request.amount());
         subscription.setCurrency(request.currency());
         subscription.setExpiresAt(timestamp + subscriptionPack.getValidityDuration());
@@ -81,29 +131,84 @@ public class SubscriptionService {
         );
     }
 
-    public GetSubscriptionResponse getUserSubscription(final String requestId, final String userId) {
-        log.info("{} received get subscription request for userId {}", requestId, userId);
+    public GetSubscriptionResponse getActiveUserSubscription(final String requestId, final String userId) {
+        log.info("[{}] received get active subscription request for userId {}", requestId, userId);
 
-        final var subscriptionDTOOptional = getSubscriptionForUserId(requestId, userId);
+        final var subscriptionDTOOptional = getActiveSubscriptionForUserId(requestId, userId);
 
         if (subscriptionDTOOptional.isEmpty()) {
-            log.info("{} subscription not found for userId={}", requestId, userId);
+            log.info("[{}] subscription not found for userId={}", requestId, userId);
 
-            return new GetSubscriptionResponse(
-                    HttpStatus.OK.value(),
-                    "No active subscription found",
-                    null
-            );
+            return GetSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message("No active subscription found")
+                    .build();
+        }
+
+        final var subscriptionPackOptional = subscriptionPackService.getSubscriptionPackByPackId(
+                requestId,
+                subscriptionDTOOptional.get().getPackId()
+        );
+
+        if (subscriptionPackOptional.isEmpty()) {
+            log.warn("[{}] subscription pack not found for userId={}", requestId, userId);
+            return GetSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message("Failed to fetch subscription pack details")
+                    .build();
         }
 
         final var subscriptionDTO = subscriptionDTOOptional.get();
-        log.debug("{} subscription fetched for userId={}: {}", requestId, userId, subscriptionDTO);
+        final var subscriptionPack = subscriptionPackOptional.get();
 
-        return new GetSubscriptionResponse(
-                HttpStatus.OK.value(),
-                "Subscription retrieved successfully",
-                subscriptionDTO
+        log.debug("{} subscription fetched for userId {}: {}", requestId, userId, subscriptionDTO);
+        log.debug("{} subscription pack fetched for userId {}: {}", requestId, userId, subscriptionPack);
+
+        final var subscription = createResponseSubscriptionFromSubscription(subscriptionDTO);
+        final var pack = createResponsePackFromSubscriptionPack(subscriptionPack);
+
+        return GetSubscriptionResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Subscription details fetched successfully")
+                .subscription(subscription)
+                .pack(pack)
+                .build();
+    }
+
+    public GetAllSubscriptionResponse getAllSubscriptions(final String requestId, final String userId) {
+        log.info("[{}] received get all subscription request for userId {}", requestId, userId);
+
+        final var subscriptions = subscriptionCache.getAllSubscriptionsByUserId(requestId, userId);
+
+        if (!subscriptions.isEmpty()) {
+            return GetAllSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message("All subscriptions fetched successfully")
+                    .subscriptions(subscriptions.stream().map(this::createResponseSubscriptionFromSubscription).toList())
+                    .build();
+        }
+
+        final var subscriptionsFromDb = subscriptionDatabaseService.findAllSubscriptionsForUserId(requestId, userId);
+
+        if (subscriptionsFromDb.isEmpty()) {
+            log.warn("[{}] subscription not found for userId={}", requestId, userId);
+            return GetAllSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message("No subscriptions found")
+                    .build();
+        }
+
+        subscriptionCache.addUserSubscriptions(
+                requestId,
+                userId,
+                subscriptionsFromDb.stream().map(SubscriptionDTO::fromSubscription).toList()
         );
+
+        return GetAllSubscriptionResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("All subscriptions fetched successfully")
+                .subscriptions(subscriptions.stream().map(this::createResponseSubscriptionFromSubscription).toList())
+                .build();
     }
 
     public List<ActiveSubscription> getAllActiveSubscriptions() {
@@ -123,11 +228,11 @@ public class SubscriptionService {
         }
     }
 
-    private Optional<SubscriptionDTO> getSubscriptionForUserId(final String requestId, final String userId) {
-        final var cachedSubscriptionDtoOptional = subscriptionCache.getSubscriptionByUserId(requestId, userId);
+    private Optional<SubscriptionDTO> getActiveSubscriptionForUserId(final String requestId, final String userId) {
+        final var cachedSubscriptionDtoOptional = subscriptionCache.getActiveSubscriptionByUserId(requestId, userId);
 
         if (cachedSubscriptionDtoOptional.isPresent()) {
-            log.info("{} subscription found for userId={} in cache", requestId, userId);
+            log.info("[{}] subscription found for userId={} in cache", requestId, userId);
             return cachedSubscriptionDtoOptional;
         }
 
@@ -139,6 +244,35 @@ public class SubscriptionService {
         );
 
         return subscriptionOptional.map(SubscriptionDTO::fromSubscription);
+    }
+
+    private GetSubscriptionResponsePack createResponsePackFromSubscriptionPack(final SubscriptionPack subscriptionPack) {
+        final var pack = new GetSubscriptionResponsePack();
+        pack.setId(subscriptionPack.getId());
+        pack.setName(subscriptionPack.getName());
+        pack.setPrivileges(subscriptionPack.getPrivileges());
+        pack.setFeatures(subscriptionPack.getFeatures());
+        pack.setDefaultPack(subscriptionPack.getDefaultPack());
+        return pack;
+    }
+
+    private GetSubscriptionResponseSubscription createResponseSubscriptionFromSubscription(final SubscriptionDTO subscriptionDTO) {
+        final var subscription = new GetSubscriptionResponseSubscription();
+        subscription.setSubscriptionId(subscriptionDTO.getId());
+        subscription.setUserId(subscriptionDTO.getUserId());
+        subscription.setPackId(subscriptionDTO.getPackId());
+        subscription.setActivatedAt(subscriptionDTO.getActivatedAt());
+        subscription.setExpiresAt(subscriptionDTO.getExpiresAt());
+        subscription.setStatus(subscriptionDTO.getStatus().name());
+        return subscription;
+    }
+
+    private String generateSubscriptionId(final String userId, final String packId) {
+        final var timestamp = System.currentTimeMillis() / 1000;
+        final var userIdHash = userId.hashCode();
+        final var result = String.format("%04x", (timestamp - userIdHash) & 0xFFFF);
+        final var uuidSegment = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return String.format("sub-%s%s%s", String.format("%04x", packId.hashCode() & 0xFFFF), result, uuidSegment);
     }
 
 }

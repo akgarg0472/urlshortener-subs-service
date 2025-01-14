@@ -18,7 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RedisSubscriptionPackCache implements SubscriptionPackCache {
 
-    private static final String REDIS_SUBS_PACK_KEY = "subscription_pack";
+    private static final String REDIS_SUBS_PACK_KEY = "subs:pack";
+    private static final String REDIS_DEFAULT_SUBS_PACK_ID = "default:subs:pack";
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -28,10 +29,16 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
         log.info("[{}] Adding subscription pack {}", requestId, subscriptionPack);
 
         try {
-            redisTemplate.opsForHash().put(REDIS_SUBS_PACK_KEY, subscriptionPack.getId(), objectMapper.writeValueAsString(subscriptionPack));
-            log.info("[{}] Successfully added subscription pack {}", requestId, subscriptionPack);
+            final var pack = objectMapper.writeValueAsString(subscriptionPack);
+            redisTemplate.opsForHash().putIfAbsent(REDIS_SUBS_PACK_KEY, subscriptionPack.getId(), pack);
+
+            if (Boolean.TRUE.equals(subscriptionPack.getDefaultPack())) {
+                redisTemplate.opsForHash().put(REDIS_SUBS_PACK_KEY, REDIS_DEFAULT_SUBS_PACK_ID, pack);
+            }
+
+            log.info("[{}] Successfully added subscription pack", requestId);
         } catch (Exception e) {
-            log.error("Failed to add subscription pack {}", subscriptionPack, e);
+            log.error("[{}] Failed to add subscription pack", requestId, e);
         }
     }
 
@@ -74,6 +81,11 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
         } catch (Exception e) {
             log.error("[{}] Failed to delete subscription pack {}", requestId, packId, e);
         }
+    }
+
+    @Override
+    public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
+        return getPackById(requestId, REDIS_DEFAULT_SUBS_PACK_ID);
     }
 
 }

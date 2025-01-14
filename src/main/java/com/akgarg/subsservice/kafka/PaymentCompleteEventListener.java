@@ -1,6 +1,5 @@
 package com.akgarg.subsservice.kafka;
 
-import com.akgarg.subsservice.exception.BadRequestException;
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
 import com.akgarg.subsservice.v1.subs.SubscriptionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -19,16 +17,16 @@ import java.util.Objects;
 @Profile("prod")
 @Component
 @RequiredArgsConstructor
-public class KafkaPaymentEventListener {
+public class PaymentCompleteEventListener extends AbstractKafkaEventListener {
 
     private final SubscriptionService subscriptionService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "${kafka.payment.success.topic.name}", containerFactory = "manualAckConcurrentKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.payment.success.topic.name:urlshortener.payment.events}",
+            containerFactory = "paymentEventManualAckConcurrentKafkaListenerContainerFactory")
     public void onMessage(final ConsumerRecord<String, String> consumerRecord, final Acknowledgment acknowledgment) {
-        log.info("received kafka payment event: {}", consumerRecord.value());
-
-        boolean isProcessingSuccessful = false;
+        final var requestId = generateRequestId(consumerRecord);
+        log.info("[{}] received kafka payment event: {}", requestId, consumerRecord.value());
 
         try {
             final var paymentCompleteEvent = objectMapper.readValue(consumerRecord.value(), PaymentCompleteEvent.class);
@@ -42,23 +40,10 @@ public class KafkaPaymentEventListener {
                     paymentCompleteEvent.paymentGateway()
             );
 
-            final var requestId = consumerRecord.key();
-            final var subscriptionResponse = subscriptionService.subscribe(requestId, subscriptionRequest);
-
-            if (subscriptionResponse.statusCode() == HttpStatus.CREATED.value() ||
-                    subscriptionResponse.statusCode() == HttpStatus.CONFLICT.value()) {
-                isProcessingSuccessful = true;
-            }
+            subscriptionService.subscribe(requestId, subscriptionRequest);
+            acknowledgment.acknowledge();
         } catch (Exception e) {
-            log.error("error processing kafka event", e);
-
-            if (e instanceof BadRequestException) {
-                isProcessingSuccessful = true;
-            }
-        } finally {
-            if (isProcessingSuccessful) {
-                acknowledgment.acknowledge();
-            }
+            log.error("[{}] error processing kafka event", requestId, e);
         }
     }
 

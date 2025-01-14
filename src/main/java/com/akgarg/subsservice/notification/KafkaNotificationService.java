@@ -1,6 +1,5 @@
 package com.akgarg.subsservice.notification;
 
-import com.akgarg.subsservice.v1.pack.SubscriptionPackDTO;
 import com.akgarg.subsservice.v1.subs.SubscriptionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,45 +20,21 @@ public class KafkaNotificationService implements NotificationService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${kafka.subscription.update.topic.name:urlshortener.subscription.events}")
-    private String subscriptionTopicName;
+    @Value("${kafka.notification.email.topic.name:urlshortener.notifications.email}")
+    private String notificationTopicName;
 
+    // TODO: fix method
     @Override
     public void sendSubscriptionSuccess(final String requestId, final SubscriptionDTO subscriptionDTO) {
-        final var subscriptionEvent = new SubscriptionEvent();
-        subscriptionEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_SUCCESS);
-        subscriptionEvent.setSubscription(subscriptionDTO);
-        sendEvent(requestId, subscriptionEvent);
-        // TODO: add email notification
+        final var notificationEvent = new SubscriptionNotificationEvent();
+        notificationEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_SUCCESS);
+        notificationEvent.setSubscription(subscriptionDTO);
+        sendEvent(requestId, notificationEvent);
     }
 
-    @Override
-    public void sendSubscriptionPackCreated(final String requestId, final SubscriptionPackDTO subscriptionPack) {
-        final var subscriptionEvent = new SubscriptionEvent();
-        subscriptionEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_PACK_CREATED);
-        subscriptionEvent.setSubscriptionPack(subscriptionPack);
-        sendEvent(requestId, subscriptionEvent);
-    }
-
-    @Override
-    public void sendSubscriptionPackUpdated(final String requestId, final SubscriptionPackDTO subscriptionPack) {
-        final var subscriptionEvent = new SubscriptionEvent();
-        subscriptionEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_PACK_UPDATED);
-        subscriptionEvent.setSubscriptionPack(subscriptionPack);
-        sendEvent(requestId, subscriptionEvent);
-    }
-
-    @Override
-    public void sendSubscriptionPackDeleted(final String requestId, final SubscriptionPackDTO subscriptionPack) {
-        final var subscriptionEvent = new SubscriptionEvent();
-        subscriptionEvent.setEventType(SubscriptionEventType.SUBSCRIPTION_PACK_DELETED);
-        subscriptionEvent.setSubscriptionPack(subscriptionPack);
-        sendEvent(requestId, subscriptionEvent);
-    }
-
-    private void sendEvent(final String requestId, final SubscriptionEvent subscriptionEvent) {
-        serializeEvent(requestId, subscriptionEvent)
-                .ifPresent(json -> kafkaTemplate.send(subscriptionTopicName, json)
+    private void sendEvent(final String requestId, final SubscriptionNotificationEvent subscriptionNotificationEvent) {
+        serializeEvent(requestId, subscriptionNotificationEvent)
+                .ifPresent(json -> kafkaTemplate.send(notificationTopicName, json)
                         .whenComplete((result, throwable) -> {
                             if (throwable != null) {
                                 log.error("[{}] Failed to send subscription event", requestId, throwable);
@@ -70,11 +45,11 @@ public class KafkaNotificationService implements NotificationService {
                 );
     }
 
-    private Optional<String> serializeEvent(final String requestId, final SubscriptionEvent subscriptionEvent) {
+    private Optional<String> serializeEvent(final String requestId, final SubscriptionNotificationEvent subscriptionNotificationEvent) {
         try {
-            return Optional.of(objectMapper.writeValueAsString(subscriptionEvent));
+            return Optional.of(objectMapper.writeValueAsString(subscriptionNotificationEvent));
         } catch (Exception e) {
-            log.error("[{}] Error serializing subscription event", requestId, e);
+            log.error("[{}] Error serializing subscription notification event", requestId, e);
             return Optional.empty();
         }
     }

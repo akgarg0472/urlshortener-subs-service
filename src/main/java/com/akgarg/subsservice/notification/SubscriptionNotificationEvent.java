@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class SubscriptionEvent {
+public class SubscriptionNotificationEvent {
 
     private SubscriptionEventType eventType;
     private SubscriptionDTO subscription;

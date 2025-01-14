@@ -1,6 +1,7 @@
 package com.akgarg.subsservice.v1.subs;
 
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
+import com.akgarg.subsservice.response.GetAllSubscriptionResponse;
 import com.akgarg.subsservice.response.GetSubscriptionResponse;
 import com.akgarg.subsservice.response.MakeSubscriptionResponse;
 import jakarta.validation.Valid;
@@ -36,38 +37,59 @@ public class SubscriptionController {
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<GetSubscriptionResponse> getSubscription(
+    @GetMapping("/active")
+    public ResponseEntity<GetSubscriptionResponse> getActiveSubscription(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
             @RequestParam(value = "userId") final String userId
     ) {
         if (requestIdHeader == null || userId == null) {
-            return ResponseEntity.badRequest().body(
-                    new GetSubscriptionResponse(
-                            HttpStatus.BAD_REQUEST.value(),
-                            "Invalid userId provided",
-                            null
-                    )
-            );
+            final var response = GetSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                    .message("Invalid request ID")
+                    .build();
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (!requestIdHeader.equals(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    new GetSubscriptionResponse(
-                            HttpStatus.UNAUTHORIZED.value(),
-                            "You are not authorized to access this resource",
-                            null
-                    )
-            );
+            final var response = GetSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.UNAUTHORIZED.value())
+                    .message("You are not authorized to access this resource")
+                    .build();
+            return ResponseEntity.badRequest().body(response);
         }
 
-        final var response = subscriptionService.getUserSubscription(requestId, userId);
-        return ResponseEntity.status(response.statusCode()).body(response);
+        final var response = subscriptionService.getActiveUserSubscription(requestId, userId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<GetAllSubscriptionResponse> getAllSubscription(
+            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
+            @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
+            @RequestParam(value = "userId") final String userId) {
+        if (requestIdHeader == null || userId == null) {
+            final var response = GetAllSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                    .message("Invalid request ID")
+                    .build();
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (!requestIdHeader.equals(userId)) {
+            final var response = GetAllSubscriptionResponse.builder()
+                    .statusCode(HttpStatus.UNAUTHORIZED.value())
+                    .message("You are not authorized to access this resource")
+                    .build();
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        final var response = subscriptionService.getAllSubscriptions(requestId, userId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     // used by other services (Payment service) to keep track of all active subscriptions
-    @GetMapping("/active")
+    @GetMapping("/active-all")
     public ResponseEntity<List<ActiveSubscription>> getActiveSubscriptions() {
         final var response = subscriptionService.getAllActiveSubscriptions();
         return ResponseEntity.ok(response);

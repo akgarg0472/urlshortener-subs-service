@@ -29,18 +29,20 @@ public class Subscription {
     @Column(nullable = false)
     private String currency;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private SubscriptionStatus status;
+    @Column(name = "subs_status", nullable = false)
+    private String status;
 
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private Boolean defaultSubscription;
+
     @CreatedDate
     @Column(nullable = false)
-    private long subscribedAt;
+    private Long subscribedAt;
 
     @Column(nullable = false)
-    private long expiresAt;
+    private Long expiresAt;
 
 }

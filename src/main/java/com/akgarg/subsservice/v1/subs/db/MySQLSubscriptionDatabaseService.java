@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,7 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
         log.info("[{}] finding active subscription for user {}", requestId, userId);
 
         try {
-            return subscriptionRepository.findByUserIdAndStatusEqualsIgnoreCase(userId, SubscriptionStatus.ACTIVE);
+            return subscriptionRepository.findByUserIdAndStatusEqualsIgnoreCase(userId, SubscriptionStatus.ACTIVE.name());
         } catch (Exception e) {
             log.error("[{}] failed to find active subscription for user {}", requestId, userId, e);
         }
@@ -45,9 +46,19 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
     @Override
     public List<Subscription> findAllActiveSubscriptions() {
         try {
-            return subscriptionRepository.findAllByStatus(SubscriptionStatus.ACTIVE);
+            return subscriptionRepository.findAllByStatus(SubscriptionStatus.ACTIVE.name());
         } catch (Exception e) {
             log.error("Error finding active subscriptions", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Collection<Subscription> findAllSubscriptionsForUserId(final String requestId, final String userId) {
+        try {
+            return subscriptionRepository.findAllByUserIdOrderBySubscribedAtDesc(userId);
+        } catch (Exception e) {
+            log.error("Error finding all subscriptions for user {}", userId, e);
             throw e;
         }
     }

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,8 +44,14 @@ public class MySQLSubscriptionPackDatabaseService implements SubscriptionPackDat
     }
 
     @Override
-    public List<SubscriptionPack> findAll() {
+    public Collection<SubscriptionPack> findAll() {
         return subscriptionPackRepository.findAll();
+    }
+
+    @Override
+    public Optional<SubscriptionPack> findDefaultSubscriptionPack(final String requestId) {
+        log.info("[{}] Find Default Subscription Pack", requestId);
+        return subscriptionPackRepository.findByDefaultPackTrue();
     }
 
 }
