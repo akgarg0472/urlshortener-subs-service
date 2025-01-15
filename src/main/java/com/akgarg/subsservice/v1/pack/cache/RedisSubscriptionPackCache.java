@@ -18,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RedisSubscriptionPackCache implements SubscriptionPackCache {
 
-    private static final String REDIS_SUBS_PACK_KEY = "subs:pack";
+    private static final String REDIS_SUBS_PACK_HASH_KEY = "subs:pack";
     private static final String REDIS_DEFAULT_SUBS_PACK_ID = "default:subs:pack";
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -30,10 +30,10 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
 
         try {
             final var pack = objectMapper.writeValueAsString(subscriptionPack);
-            redisTemplate.opsForHash().putIfAbsent(REDIS_SUBS_PACK_KEY, subscriptionPack.getId(), pack);
+            redisTemplate.opsForHash().put(REDIS_SUBS_PACK_HASH_KEY, subscriptionPack.getId(), pack);
 
             if (Boolean.TRUE.equals(subscriptionPack.getDefaultPack())) {
-                redisTemplate.opsForHash().put(REDIS_SUBS_PACK_KEY, REDIS_DEFAULT_SUBS_PACK_ID, pack);
+                redisTemplate.opsForValue().set(REDIS_DEFAULT_SUBS_PACK_ID, pack);
             }
 
             log.info("[{}] Successfully added subscription pack", requestId);
@@ -48,7 +48,7 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
         final var packs = new ArrayList<SubscriptionPack>();
 
         try {
-            final var entries = redisTemplate.opsForHash().entries(REDIS_SUBS_PACK_KEY);
+            final var entries = redisTemplate.opsForHash().entries(REDIS_SUBS_PACK_HASH_KEY);
             for (final var pack : entries.values()) {
                 packs.add(objectMapper.readValue(pack.toString(), SubscriptionPack.class));
             }
@@ -62,7 +62,7 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
     @Override
     public Optional<SubscriptionPack> getPackById(final String requestId, final String packId) {
         try {
-            final var object = redisTemplate.opsForHash().get(REDIS_SUBS_PACK_KEY, packId);
+            final var object = redisTemplate.opsForHash().get(REDIS_SUBS_PACK_HASH_KEY, packId);
             if (object != null) {
                 return Optional.of(objectMapper.readValue(object.toString(), SubscriptionPack.class));
             }
@@ -77,7 +77,7 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
         log.info("[{}] Deleting subscription pack {}", requestId, packId);
 
         try {
-            redisTemplate.opsForHash().delete(REDIS_SUBS_PACK_KEY, packId);
+            redisTemplate.opsForHash().delete(REDIS_SUBS_PACK_HASH_KEY, packId);
         } catch (Exception e) {
             log.error("[{}] Failed to delete subscription pack {}", requestId, packId, e);
         }

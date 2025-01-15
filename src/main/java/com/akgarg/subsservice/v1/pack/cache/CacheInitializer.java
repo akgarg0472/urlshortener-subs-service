@@ -28,6 +28,7 @@ class CacheInitializer {
         subscriptionPack.setVisible(true);
         subscriptionPack.setFeatures(getFeatures());
         subscriptionPack.setPrivileges(getPrivileges());
+        subscriptionPack.setSelected(Boolean.FALSE);
         subscriptionPack.setDefaultPack(Boolean.TRUE);
         subscriptionPackCache.addOrUpdatePack("Initializer", subscriptionPack);
     }

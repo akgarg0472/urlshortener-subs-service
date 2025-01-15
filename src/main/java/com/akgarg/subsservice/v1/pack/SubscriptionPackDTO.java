@@ -14,8 +14,8 @@ public record SubscriptionPackDTO(
         String description,
         List<String> features,
         String privileges,
-        boolean selected,
-        @JsonProperty("default_pack") boolean defaultPack
+        Boolean selected,
+        @JsonProperty("default_pack") Boolean defaultPack
 ) {
 
     public static SubscriptionPackDTO fromSubscriptionPack(final SubscriptionPack pack) {

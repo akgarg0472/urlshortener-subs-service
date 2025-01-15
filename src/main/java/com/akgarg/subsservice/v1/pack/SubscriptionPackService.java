@@ -72,7 +72,7 @@ public class SubscriptionPackService {
         );
 
         if (subscriptionPacks.isEmpty()) {
-            log.info("{} fetching packs from database", requestId);
+            log.debug("{} fetching packs from database", requestId);
 
             final var pageRequest = PageRequest.of(
                     page,

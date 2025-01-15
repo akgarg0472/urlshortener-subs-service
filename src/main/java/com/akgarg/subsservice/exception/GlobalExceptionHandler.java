@@ -34,6 +34,7 @@ public class GlobalExceptionHandler {
         if (log.isDebugEnabled()) {
             log.error("Exception", e);
         }
+        e.printStackTrace();
         final ApiErrorResponse errorResponse = switch (e) {
             case HttpRequestMethodNotSupportedException ex ->
                     methodNotAllowedErrorResponse("Request HTTP method '" + ex.getMethod() + "' is not allowed. Allowed: " + Arrays.toString(ex.getSupportedMethods()));
