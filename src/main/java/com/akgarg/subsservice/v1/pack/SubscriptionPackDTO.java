@@ -6,6 +6,7 @@ import java.util.List;
 
 public record SubscriptionPackDTO(
         String id,
+        int order,
         String name,
         Double price,
         String validity,
@@ -13,7 +14,7 @@ public record SubscriptionPackDTO(
         String currency,
         String description,
         List<String> features,
-        String privileges,
+        List<String> privileges,
         Boolean selected,
         @JsonProperty("default_pack") Boolean defaultPack
 ) {
@@ -21,6 +22,7 @@ public record SubscriptionPackDTO(
     public static SubscriptionPackDTO fromSubscriptionPack(final SubscriptionPack pack) {
         return new SubscriptionPackDTO(
                 pack.getId(),
+                pack.getOrder(),
                 pack.getName(),
                 pack.getPrice(),
                 pack.getValidityLabel(),
@@ -28,7 +30,7 @@ public record SubscriptionPackDTO(
                 pack.getCurrency(),
                 pack.getDescription(),
                 pack.getFeatures(),
-                String.join("~", pack.getPrivileges()),
+                pack.getPrivileges(),
                 pack.getSelected(),
                 pack.getDefaultPack()
         );

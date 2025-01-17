@@ -17,11 +17,23 @@ import static com.akgarg.subsservice.utils.SubsUtils.checkValidationResultAndThr
 @RestController
 @RequestMapping("/api/v1/subscriptions/packs")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class SubscriptionPackController {
 
     private static final String REQUEST_ID_HEADER = "X-Request-ID";
 
     private final SubscriptionPackService subscriptionPackService;
+
+    @GetMapping
+    public ResponseEntity<GetPacksResponse> getSubscriptionPacks(
+            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
+            @RequestParam(value = "page", defaultValue = "0") final int page,
+            @RequestParam(name = "limit", defaultValue = "3") final int limit,
+            @RequestParam(value = "getComparison", defaultValue = "false") final boolean getComparison
+    ) {
+        final var response = subscriptionPackService.getPacks(requestId, page, limit, getComparison);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 
     // TODO: restrict for ADMIN only access
     @PostMapping
@@ -32,16 +44,6 @@ public class SubscriptionPackController {
     ) {
         checkValidationResultAndThrowExceptionOnFailure(validationResult);
         final var response = subscriptionPackService.createPack(requestId, request);
-        return ResponseEntity.status(response.statusCode()).body(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<GetPacksResponse> getSubscriptionPacks(
-            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
-            @RequestParam(value = "page", defaultValue = "0") final int page,
-            @RequestParam(name = "limit", defaultValue = "3") final int limit
-    ) {
-        final var response = subscriptionPackService.getPacks(requestId, page, limit);
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 

@@ -16,6 +16,9 @@ public class SubscriptionPack {
     @Column(name = "id", nullable = false, unique = true, length = 100)
     private String id;
 
+    @Column(name = "order", nullable = false)
+    private Integer order;
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 

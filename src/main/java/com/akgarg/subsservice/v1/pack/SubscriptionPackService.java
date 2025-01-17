@@ -15,8 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -60,7 +59,7 @@ public class SubscriptionPackService {
         );
     }
 
-    public GetPacksResponse getPacks(final String requestId, final int page, final int limit) {
+    public GetPacksResponse getPacks(final String requestId, final int page, final int limit, final boolean getComparison) {
         log.debug("[{}] get packs request received, page={}, limit={}", requestId, page, limit);
 
         final var subscriptionPacks = subscriptionPackCache.getAllPacks(
@@ -91,13 +90,14 @@ public class SubscriptionPackService {
 
         final var subscriptionPackDTOS = subscriptionPacks.stream()
                 .map(SubscriptionPackDTO::fromSubscriptionPack)
+                .sorted(Comparator.comparing(SubscriptionPackDTO::order))
                 .toList();
 
-        return new GetPacksResponse(
-                HttpStatus.OK.value(),
-                subscriptionPackDTOS,
-                null
-        );
+        return GetPacksResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .packs(subscriptionPackDTOS)
+                .comparisons(getComparison ? getComparisonTableForPacks(subscriptionPackDTOS) : null)
+                .build();
     }
 
     public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
@@ -279,6 +279,55 @@ public class SubscriptionPackService {
         pack.setDeleted(false);
         pack.setDefaultPack(request.defaultPack());
         return pack;
+    }
+
+    private PackComparison getComparisonTableForPacks(final List<SubscriptionPackDTO> packs) {
+        final var headers = new ArrayList<String>();
+        headers.add("Feature");
+        packs.forEach(pack -> headers.add(pack.name()));
+
+        final var rows = new ArrayList<List<Object>>();
+
+        for (final var packPrivilege : PackPrivilege.values()) {
+            if (packPrivilege == PackPrivilege.ANALYTIC) {
+                continue;
+            }
+
+            final var row = new ArrayList<>();
+            final var feature = packPrivilege.value();
+            row.add(packPrivilege.key());
+
+            for (final var pack : packs) {
+                var featureFound = false;
+
+                for (final var privilege : pack.privileges()) {
+                    if (privilege.startsWith(feature)) {
+                        final var value = getPrivilegeValue(privilege);
+                        row.add(value);
+                        featureFound = true;
+                        break;
+                    }
+                }
+
+                if (!featureFound) {
+                    row.add(null);
+                }
+            }
+
+            rows.add(row);
+        }
+
+        return new PackComparison(headers, rows);
+    }
+
+    private Object getPrivilegeValue(final String privilege) {
+        final var value = privilege.split(":", 2)[1].trim();
+
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            return Boolean.parseBoolean(value);
+        } else {
+            return value;
+        }
     }
 
 }
