@@ -7,6 +7,7 @@ import com.akgarg.subsservice.response.MakeSubscriptionResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,7 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
 
-    // TODO: restrict for admin only access
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MakeSubscriptionResponse> makeSubscription(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestBody @Valid final MakeSubscriptionRequest request,
@@ -37,7 +37,7 @@ public class SubscriptionController {
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 
-    @GetMapping("/active")
+    @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetSubscriptionResponse> getActiveSubscription(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
@@ -63,7 +63,7 @@ public class SubscriptionController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetAllSubscriptionResponse> getAllSubscription(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
@@ -89,7 +89,7 @@ public class SubscriptionController {
     }
 
     // used by other services (Payment service) to keep track of all active subscriptions
-    @GetMapping("/active-all")
+    @GetMapping(value = "/active-all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ActiveSubscription>> getActiveSubscriptions() {
         final var response = subscriptionService.getAllActiveSubscriptions();
         return ResponseEntity.ok(response);

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,19 +32,24 @@ public class GlobalExceptionHandler {
                 "Error in processing request: {}",
                 Map.of("exception_class", e.getClass().getName(), "exception_msg", e.getMessage())
         );
+
         if (log.isDebugEnabled()) {
-            log.error("Exception", e);
+            log.error("Exception: ", e);
         }
+
         final ApiErrorResponse errorResponse = switch (e) {
             case HttpRequestMethodNotSupportedException ex ->
                     methodNotAllowedErrorResponse("Request HTTP method '" + ex.getMethod() + "' is not allowed. Allowed: " + Arrays.toString(ex.getSupportedMethods()));
             case HttpMediaTypeNotSupportedException ex ->
                     badRequestErrorResponse("Media type '" + ex.getContentType() + "' is not supported");
-            case HttpMessageNotReadableException ex -> badRequestErrorResponse("Please provide valid request body");
+            case HttpMessageNotReadableException ignored ->
+                    badRequestErrorResponse("Please provide valid request body");
             case NoResourceFoundException ex ->
                     resourceNotFoundErrorResponse("Requested resource not found: " + ex.getResourcePath());
             case MissingServletRequestParameterException ex ->
                     badRequestErrorResponse("Parameter '%s' of type %s is missing".formatted(ex.getParameterName(), ex.getParameterType()));
+            case MissingRequestHeaderException ex ->
+                    badRequestErrorResponse("Required Request Header '%s' is missing".formatted(ex.getHeaderName()));
             default -> internalServerErrorResponse();
         };
 
