@@ -12,3 +12,23 @@ eureka:
     enabled: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    status-page-url-path: /admin/management/info
+    health-check-url-path: /admin/management/health
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,info
+      base-path: /admin/management
+  endpoint:
+    health:
+      show-details: always
+    info:
+      access: read_only
+    metrics:
+      access: read_only
