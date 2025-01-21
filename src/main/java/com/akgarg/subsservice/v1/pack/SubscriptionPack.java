@@ -3,20 +3,23 @@ package com.akgarg.subsservice.v1.pack;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @Setter
 @Entity
+@ToString
 @Table(name = "subscription_pack")
+@SuppressWarnings("JpaDataSourceORMInspection")
 public class SubscriptionPack {
 
     @Id
     @Column(name = "id", nullable = false, unique = true, length = 100)
     private String id;
 
-    @Column(name = "order", nullable = false)
+    @Column(name = "seq_order", nullable = false)
     private Integer order;
 
     @Column(name = "name", nullable = false, length = 100)

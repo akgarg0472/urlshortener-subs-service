@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Profile({"prod", "PROD"})
 @Component
+@Profile("prod")
 @RequiredArgsConstructor
 public class RedisSubscriptionPackCache implements SubscriptionPackCache {
 
@@ -62,6 +62,7 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
     @Override
     public Optional<SubscriptionPack> getPackById(final String requestId, final String packId) {
         try {
+            log.info("[{}] Getting subscription pack by id {}", requestId, packId);
             final var object = redisTemplate.opsForHash().get(REDIS_SUBS_PACK_HASH_KEY, packId);
             if (object != null) {
                 return Optional.of(objectMapper.readValue(object.toString(), SubscriptionPack.class));

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@Profile({"dev", "DEV"})
+@Profile("dev")
 public class InMemorySubscriptionPackCache implements SubscriptionPackCache {
 
     private final Map<String, SubscriptionPack> subscriptionPacks;
@@ -50,7 +50,7 @@ public class InMemorySubscriptionPackCache implements SubscriptionPackCache {
 
     @Override
     public Optional<SubscriptionPack> getPackById(final String requestId, final String packId) {
-        log.debug("[{}] Getting pack for packId: {}", requestId, packId);
+        log.info("[{}] Getting subscription pack by id {}", requestId, packId);
         return Optional.of(subscriptionPacks.get(packId));
     }
 

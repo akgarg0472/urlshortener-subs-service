@@ -21,7 +21,7 @@ public class MySQLSubscriptionPackDatabaseService implements SubscriptionPackDat
 
     @Override
     public Optional<SubscriptionPack> findByPackId(final String requestId, final String packId) {
-        log.debug("[{}] Find Pack by Pack Id: {}", requestId, packId);
+        log.info("[{}] Getting subscription pack by id {}", requestId, packId);
 
         try {
             return subscriptionPackRepository.findById(packId);

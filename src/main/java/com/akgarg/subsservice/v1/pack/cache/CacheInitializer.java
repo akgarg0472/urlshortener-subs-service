@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "prod"})
 @RequiredArgsConstructor
 class CacheInitializer {
 
@@ -35,7 +35,7 @@ class CacheInitializer {
     private SubscriptionPack getFreeSubscriptionPack() {
         final var freePack = new SubscriptionPack();
         freePack.setOrder(1);
-        freePack.setId("free_plan");
+        freePack.setId("DEFAULT-FREE-001");
         freePack.setName("Free");
         freePack.setDescription("Free plan for basic usage");
         freePack.setPrice(0d);
@@ -52,7 +52,7 @@ class CacheInitializer {
 
     private SubscriptionPack getProSubscriptionPack() {
         final var proPack = new SubscriptionPack();
-        proPack.setId("pro_plan");
+        proPack.setId("PAID-PRO-001");
         proPack.setOrder(2);
         proPack.setName("Pro");
         proPack.setDescription("Pro plan for advanced users");
@@ -71,7 +71,7 @@ class CacheInitializer {
     private SubscriptionPack getEnterpriseSubscriptionPack() {
         final var enterprisePack = new SubscriptionPack();
         enterprisePack.setOrder(3);
-        enterprisePack.setId("enterprise_plan");
+        enterprisePack.setId("PAID-ENTERPRISE-001");
         enterprisePack.setName("Enterprise");
         enterprisePack.setDescription("Enterprise plan for organizations");
         enterprisePack.setPrice(99d);
