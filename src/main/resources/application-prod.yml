@@ -38,8 +38,3 @@ kafka:
     email:
       topic:
         name: urlshortener.notifications.email
-
-auth:
-  service:
-    endpoints:
-      verify-admin: /api/v1/verify-admin
