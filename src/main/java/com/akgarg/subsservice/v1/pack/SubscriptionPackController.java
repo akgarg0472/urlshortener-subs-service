@@ -2,10 +2,7 @@ package com.akgarg.subsservice.v1.pack;
 
 import com.akgarg.subsservice.request.CreatePackRequest;
 import com.akgarg.subsservice.request.UpdatePackRequest;
-import com.akgarg.subsservice.response.CreatePackResponse;
-import com.akgarg.subsservice.response.DeletePackResponse;
-import com.akgarg.subsservice.response.GetPacksResponse;
-import com.akgarg.subsservice.response.UpdatePackResponse;
+import com.akgarg.subsservice.response.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -24,8 +21,27 @@ public class SubscriptionPackController {
 
     private final SubscriptionPackService subscriptionPackService;
 
+    @GetMapping(value = "/{packId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetSubscriptionPackResponse> getPacks(
+            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
+            @PathVariable(value = "packId") final String packId
+    ) {
+        return subscriptionPackService
+                .getSubscriptionPackByPackId(requestId, packId)
+                .map(subscriptionPack -> ResponseEntity.ok().body(GetSubscriptionPackResponse.builder()
+                        .statusCode(200)
+                        .message("Pack found with id " + packId)
+                        .pack(SubscriptionPackDTO.fromSubscriptionPack(subscriptionPack))
+                        .build()))
+                .orElseGet(() -> ResponseEntity.ok().body(GetSubscriptionPackResponse.builder()
+                        .statusCode(404)
+                        .message("Pack not found with id " + packId)
+                        .build())
+                );
+    }
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GetPacksResponse> getSubscriptionPacks(
+    public ResponseEntity<GetPacksResponse> getAllSubscriptionPacks(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestParam(value = "page", defaultValue = "0") final int page,
             @RequestParam(name = "limit", defaultValue = "3") final int limit,

@@ -64,7 +64,7 @@ public class SubscriptionController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GetAllSubscriptionResponse> getAllSubscription(
+    public ResponseEntity<GetAllSubscriptionResponse> getAllSubscriptionsForUser(
             @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
             @RequestParam(value = "userId") final String userId) {
@@ -88,7 +88,6 @@ public class SubscriptionController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    // used by other services (Payment service) to keep track of all active subscriptions
     @GetMapping(value = "/active-all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ActiveSubscription>> getActiveSubscriptions() {
         final var response = subscriptionService.getAllActiveSubscriptions();
