@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +40,6 @@ public class MySQLSubscriptionPackDatabaseService implements SubscriptionPackDat
     @Override
     public List<SubscriptionPack> findAllByVisibleAndDeleted(final boolean visible, final boolean deleted, final PageRequest pageRequest) {
         return subscriptionPackRepository.findAllByVisibleAndDeleted(visible, deleted, pageRequest);
-    }
-
-    @Override
-    public Collection<SubscriptionPack> findAll() {
-        return subscriptionPackRepository.findAll();
     }
 
     @Override

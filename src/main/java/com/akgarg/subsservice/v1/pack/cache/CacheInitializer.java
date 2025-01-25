@@ -1,5 +1,6 @@
 package com.akgarg.subsservice.v1.pack.cache;
 
+import com.akgarg.subsservice.v1.pack.AnalyticMetricType;
 import com.akgarg.subsservice.v1.pack.PackPrivilege;
 import com.akgarg.subsservice.v1.pack.SubscriptionPack;
 import com.akgarg.subsservice.v1.pack.SubscriptionPackValidity;
@@ -107,7 +108,9 @@ class CacheInitializer {
                 PackPrivilege.CUSTOM_ALIAS.value() + ":50",
                 PackPrivilege.SECURITY.value() + VALUE_ADVANCED,
                 PackPrivilege.ANALYTICS.value() + VALUE_ADVANCED,
-                PackPrivilege.PREMIUM_SUPPORT.value() + VALUE_TRUE
+                PackPrivilege.PREMIUM_SUPPORT.value() + VALUE_TRUE,
+                PackPrivilege.ANALYTIC.value() + ":" + AnalyticMetricType.DEVICE_METRIC.metricName(),
+                PackPrivilege.ANALYTIC.value() + ":" + AnalyticMetricType.GEOGRAPHY_METRIC.metricName()
         );
     }
 
@@ -118,7 +121,8 @@ class CacheInitializer {
                 PackPrivilege.SECURITY.value() + ":enterprise",
                 PackPrivilege.ANALYTICS.value() + VALUE_ADVANCED,
                 PackPrivilege.PREMIUM_SUPPORT.value() + VALUE_TRUE,
-                PackPrivilege.PREMIUM_247_SUPPORT.value() + VALUE_TRUE
+                PackPrivilege.PREMIUM_247_SUPPORT.value() + VALUE_TRUE,
+                PackPrivilege.ANALYTIC.value() + ":" + AnalyticMetricType.ALL_METRICS.metricName()
         );
     }
 

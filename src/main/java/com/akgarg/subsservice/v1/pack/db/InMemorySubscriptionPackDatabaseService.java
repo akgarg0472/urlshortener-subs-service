@@ -6,7 +6,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,12 +42,8 @@ public class InMemorySubscriptionPackDatabaseService implements SubscriptionPack
     }
 
     @Override
-    public Collection<SubscriptionPack> findAll() {
-        return subscriptionPacks.values();
-    }
-
-    @Override
     public Optional<SubscriptionPack> findDefaultSubscriptionPack(final String requestId) {
         return Optional.empty();
     }
+
 }

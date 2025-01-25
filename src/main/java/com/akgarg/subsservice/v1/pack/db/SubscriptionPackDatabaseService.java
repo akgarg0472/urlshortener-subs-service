@@ -3,7 +3,6 @@ package com.akgarg.subsservice.v1.pack.db;
 import com.akgarg.subsservice.v1.pack.SubscriptionPack;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,8 +13,6 @@ public interface SubscriptionPackDatabaseService {
     SubscriptionPack saveOrUpdatePack(String requestId, SubscriptionPack plan);
 
     List<SubscriptionPack> findAllByVisibleAndDeleted(boolean visible, boolean deleted, PageRequest pageRequest);
-
-    Collection<SubscriptionPack> findAll();
 
     Optional<SubscriptionPack> findDefaultSubscriptionPack(String requestId);
 
