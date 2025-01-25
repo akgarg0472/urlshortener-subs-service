@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,20 +36,19 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     }
 
     @Override
-    public List<Subscription> findAllActiveSubscriptions() {
-        return subscriptions
-                .stream()
-                .filter(subscription -> SubscriptionStatus.ACTIVE.name().equalsIgnoreCase(subscription.getStatus()))
-                .toList();
-    }
-
-    @Override
     public Collection<Subscription> findAllSubscriptionsForUserId(final String requestId, final String userId) {
         return subscriptions
                 .stream()
                 .filter(subscription -> subscription.getUserId().equalsIgnoreCase(userId))
                 .sorted(Comparator.comparing(Subscription::getSubscribedAt).reversed())
                 .toList();
+    }
+
+    @Override
+    public void updateSubscription(final String requestId, final Subscription subscription) {
+        log.info("[{}] updating subscription {}", requestId, subscription);
+        subscriptions.remove(subscription);
+        subscriptions.add(subscription);
     }
 
 }

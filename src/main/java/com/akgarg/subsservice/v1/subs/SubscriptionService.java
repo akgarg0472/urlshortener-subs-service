@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -104,6 +103,13 @@ public class SubscriptionService {
             );
         }
 
+        if (activeSubscription.isPresent()) {
+            activeSubscription.get().setExpiresAt(System.currentTimeMillis());
+            activeSubscription.get().setStatus(SubscriptionStatus.EXPIRED.name());
+            subscriptionDatabaseService.updateSubscription(requestId, activeSubscription.get());
+            log.info("{} current subscription marked as {}", requestId, SubscriptionStatus.EXPIRED.name());
+        }
+
         final var subscription = new Subscription();
         subscription.setId(generateSubscriptionId(request.userId(), request.packId()));
         subscription.setAmount(request.amount());
@@ -113,6 +119,8 @@ public class SubscriptionService {
         subscription.setUserId(request.userId());
         subscription.setDescription(request.description());
         subscription.setPackId(subscriptionPack.getId());
+        subscription.setDefaultSubscription(Boolean.FALSE);
+        subscription.setStatus(SubscriptionStatus.ACTIVE.name());
 
         final var createdSubscription = subscriptionDatabaseService.addSubscription(requestId, subscription);
 
@@ -180,11 +188,12 @@ public class SubscriptionService {
 
         final var subscriptions = subscriptionCache.getAllSubscriptionsByUserId(requestId, userId);
 
-        if (!subscriptions.isEmpty()) {
+        if (subscriptions.isPresent()) {
+            log.info("{} subscriptions found for userId={} in cache", requestId, userId);
             return GetAllSubscriptionResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message("All subscriptions fetched successfully")
-                    .subscriptions(subscriptions.stream().map(this::createResponseSubscriptionFromSubscription).toList())
+                    .subscriptions(subscriptions.get().stream().map(this::createResponseSubscriptionFromSubscription).toList())
                     .build();
         }
 
@@ -198,34 +207,18 @@ public class SubscriptionService {
                     .build();
         }
 
+        final var subscriptionDTOS = subscriptionsFromDb.stream().map(SubscriptionDTO::fromSubscription).toList();
         subscriptionCache.addUserSubscriptions(
                 requestId,
                 userId,
-                subscriptionsFromDb.stream().map(SubscriptionDTO::fromSubscription).toList()
+                subscriptionDTOS
         );
 
         return GetAllSubscriptionResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("All subscriptions fetched successfully")
-                .subscriptions(subscriptions.stream().map(this::createResponseSubscriptionFromSubscription).toList())
+                .subscriptions(subscriptionDTOS.stream().map(this::createResponseSubscriptionFromSubscription).toList())
                 .build();
-    }
-
-    public List<ActiveSubscription> getAllActiveSubscriptions() {
-        try {
-            final var subscriptions = subscriptionDatabaseService.findAllActiveSubscriptions();
-            return subscriptions.stream()
-                    .map(subscription -> new ActiveSubscription(
-                                    subscription.getUserId(),
-                                    subscription.getPackId(),
-                                    subscription.getExpiresAt()
-                            )
-                    ).toList();
-        } catch (Exception e) {
-            throw new SubscriptionException(new String[]{"Failed to fetch active subscription details"},
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Failed to get active subscriptions");
-        }
     }
 
     private Optional<SubscriptionDTO> getActiveSubscriptionForUserId(final String requestId, final String userId) {

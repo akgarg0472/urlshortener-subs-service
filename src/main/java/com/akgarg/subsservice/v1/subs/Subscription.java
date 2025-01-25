@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @Setter
@@ -12,6 +14,7 @@ import org.springframework.data.annotation.CreatedDate;
         @Index(name = "idx_subscription_user_id", columnList = "user_id"),
         @Index(name = "idx_subscription_user_id_pack_id", columnList = "user_id,pack_id")
 })
+@SuppressWarnings("JpaDataSourceORMInspection")
 public class Subscription {
 
     @Id
@@ -44,5 +47,17 @@ public class Subscription {
 
     @Column(nullable = false)
     private Long expiresAt;
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        final Subscription that = (Subscription) o;
+        return Objects.equals(id, that.id) && Objects.equals(userId, that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId);
+    }
 
 }

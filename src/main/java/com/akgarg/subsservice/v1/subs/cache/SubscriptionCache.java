@@ -13,6 +13,6 @@ public interface SubscriptionCache {
 
     void addUserSubscriptions(String requestId, final String userId, Collection<SubscriptionDTO> subscriptions);
 
-    Collection<SubscriptionDTO> getAllSubscriptionsByUserId(String requestId, String userId);
+    Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(String requestId, String userId);
 
 }

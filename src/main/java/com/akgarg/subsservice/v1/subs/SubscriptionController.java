@@ -12,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.akgarg.subsservice.utils.SubsUtils.checkValidationResultAndThrowExceptionOnFailure;
 
 @RestController
@@ -86,12 +84,6 @@ public class SubscriptionController {
 
         final var response = subscriptionService.getAllSubscriptions(requestId, userId);
         return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
-
-    @GetMapping(value = "/active-all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ActiveSubscription>> getActiveSubscriptions() {
-        final var response = subscriptionService.getAllActiveSubscriptions();
-        return ResponseEntity.ok(response);
     }
 
 }

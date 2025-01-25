@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -33,22 +32,12 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
 
     @Override
     public Subscription addSubscription(final String requestId, final Subscription subscription) {
-        log.info("[{}] adding new subscription {}", requestId, subscription);
+        log.info("[{}] adding new subscription with id: {}", requestId, subscription.getId());
 
         try {
             return subscriptionRepository.save(subscription);
         } catch (Exception e) {
-            log.error("[{}] failed to add new subscription {}", requestId, subscription, e);
-            throw e;
-        }
-    }
-
-    @Override
-    public List<Subscription> findAllActiveSubscriptions() {
-        try {
-            return subscriptionRepository.findAllByStatus(SubscriptionStatus.ACTIVE.name());
-        } catch (Exception e) {
-            log.error("Error finding active subscriptions", e);
+            log.error("[{}] failed to add new subscription", requestId, e);
             throw e;
         }
     }
@@ -59,6 +48,18 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
             return subscriptionRepository.findAllByUserIdOrderBySubscribedAtDesc(userId);
         } catch (Exception e) {
             log.error("Error finding all subscriptions for user {}", userId, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void updateSubscription(final String requestId, final Subscription subscription) {
+        log.info("[{}] updating subscription with id: {}", requestId, subscription.getId());
+
+        try {
+            subscriptionRepository.save(subscription);
+        } catch (Exception e) {
+            log.error("[{}] failed to update subscription {}", requestId, subscription, e);
             throw e;
         }
     }

@@ -59,12 +59,12 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public Collection<SubscriptionDTO> getAllSubscriptionsByUserId(final String requestId, final String userId) {
+    public Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(final String requestId, final String userId) {
         log.debug("[{}] Getting all subscriptions from cache", requestId);
-        return groupedSubscriptions.getOrDefault(userId, Collections.emptyList())
+        return Optional.of(groupedSubscriptions.getOrDefault(userId, Collections.emptyList())
                 .stream()
                 .sorted(Comparator.comparing(SubscriptionDTO::getActivatedAt).reversed())
-                .toList();
+                .toList());
     }
 
     /**

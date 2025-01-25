@@ -11,8 +11,8 @@ public interface SubscriptionDatabaseService {
 
     Subscription addSubscription(String requestId, Subscription subscription);
 
-    Collection<Subscription> findAllActiveSubscriptions();
-
     Collection<Subscription> findAllSubscriptionsForUserId(String requestId, String userId);
+
+    void updateSubscription(String requestId, Subscription subscription);
 
 }

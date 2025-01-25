@@ -3,6 +3,7 @@ package com.akgarg.subsservice.v1.pack.cache;
 import com.akgarg.subsservice.v1.pack.PackPrivilege;
 import com.akgarg.subsservice.v1.pack.SubscriptionPack;
 import com.akgarg.subsservice.v1.pack.SubscriptionPackValidity;
+import com.akgarg.subsservice.v1.pack.db.SubscriptionPackDatabaseService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -11,25 +12,30 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Profile({"dev", "prod"})
+@Profile("dev")
 @RequiredArgsConstructor
 class CacheInitializer {
 
     private static final String INITIALIZER = "initializer";
     private static final String VALUE_TRUE = ":true";
     private static final String VALUE_ADVANCED = ":advanced";
+
+    private final SubscriptionPackDatabaseService subscriptionPackDatabaseService;
     private final SubscriptionPackCache subscriptionPackCache;
 
     @PostConstruct
     public void init() {
         final var freePack = getFreeSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, freePack);
+        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), freePack);
 
         final var proPack = getProSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, proPack);
+        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), proPack);
 
         final var enterprisePack = getEnterpriseSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, enterprisePack);
+        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), enterprisePack);
     }
 
     private SubscriptionPack getFreeSubscriptionPack() {
