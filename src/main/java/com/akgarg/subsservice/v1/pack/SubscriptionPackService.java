@@ -86,6 +86,7 @@ public class SubscriptionPackService {
             );
 
             subscriptionPacks.addAll(packs);
+            packs.forEach(pack -> subscriptionPackCache.addOrUpdatePack(requestId, pack));
         }
 
         final var subscriptionPackDTOS = subscriptionPacks.stream()
