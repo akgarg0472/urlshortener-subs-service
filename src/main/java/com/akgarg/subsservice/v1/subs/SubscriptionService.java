@@ -6,6 +6,7 @@ import com.akgarg.subsservice.notification.NotificationService;
 import com.akgarg.subsservice.request.MakeSubscriptionRequest;
 import com.akgarg.subsservice.response.*;
 import com.akgarg.subsservice.v1.pack.SubscriptionPack;
+import com.akgarg.subsservice.v1.pack.SubscriptionPackDTO;
 import com.akgarg.subsservice.v1.pack.SubscriptionPackService;
 import com.akgarg.subsservice.v1.subs.cache.SubscriptionCache;
 import com.akgarg.subsservice.v1.subs.db.SubscriptionDatabaseService;
@@ -130,7 +131,13 @@ public class SubscriptionService {
 
         subscriptionCache.addSubscription(requestId, subscriptionDTO);
 
-        notificationService.sendSubscriptionSuccess(requestId, subscriptionDTO);
+        subscriptionDTO.setEmail(request.email());
+        subscriptionDTO.setName(request.name());
+
+        notificationService.sendSubscriptionSuccessEmail(requestId,
+                subscriptionDTO,
+                SubscriptionPackDTO.fromSubscriptionPack(subscriptionPack)
+        );
 
         return new MakeSubscriptionResponse(
                 HttpStatus.CREATED.value(),

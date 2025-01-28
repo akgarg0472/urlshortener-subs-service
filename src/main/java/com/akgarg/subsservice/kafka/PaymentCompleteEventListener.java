@@ -37,7 +37,9 @@ public class PaymentCompleteEventListener extends AbstractKafkaEventListener {
                     Objects.requireNonNull(paymentCompleteEvent.paymentId(), "paymentId is null"),
                     Objects.requireNonNull(paymentCompleteEvent.amount(), "amount is null"),
                     Objects.requireNonNull(paymentCompleteEvent.currency(), "currency is null"),
-                    paymentCompleteEvent.paymentGateway()
+                    paymentCompleteEvent.paymentGateway(),
+                    paymentCompleteEvent.email(),
+                    paymentCompleteEvent.name()
             );
 
             subscriptionService.subscribe(requestId, subscriptionRequest);

@@ -25,6 +25,12 @@ public record MakeSubscriptionRequest(
         String currency,
 
         @NotBlank(message = "description can't be null or empty")
-        String description
+        String description,
+
+        @JsonProperty("email")
+        String email,
+
+        @JsonProperty("name")
+        String name
 ) {
 }

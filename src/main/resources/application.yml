@@ -32,3 +32,14 @@ management:
       access: read_only
     metrics:
       access: read_only
+
+ui:
+  dashboard:
+    url: http://localhost:3000/dashboard
+
+subscription:
+  notification:
+    default-logo-url: https://res.cloudinary.com/dmdbqq7fp/bysb90sd8dsjst6ieeno.png
+  packs:
+    initializer:
+      push-default-packs-to-database: true

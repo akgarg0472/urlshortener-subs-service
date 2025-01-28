@@ -7,13 +7,12 @@ import com.akgarg.subsservice.v1.pack.SubscriptionPackValidity;
 import com.akgarg.subsservice.v1.pack.db.SubscriptionPackDatabaseService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
 class CacheInitializer {
 
@@ -23,20 +22,21 @@ class CacheInitializer {
 
     private final SubscriptionPackDatabaseService subscriptionPackDatabaseService;
     private final SubscriptionPackCache subscriptionPackCache;
+    private final Environment environment;
 
     @PostConstruct
     public void init() {
         final var freePack = getFreeSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, freePack);
-        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), freePack);
+        pushPackToDatabase(freePack);
 
         final var proPack = getProSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, proPack);
-        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), proPack);
+        pushPackToDatabase(proPack);
 
         final var enterprisePack = getEnterpriseSubscriptionPack();
         subscriptionPackCache.addOrUpdatePack(INITIALIZER, enterprisePack);
-        subscriptionPackDatabaseService.saveOrUpdatePack(getClass().getSimpleName(), enterprisePack);
+        pushPackToDatabase(enterprisePack);
     }
 
     private SubscriptionPack getFreeSubscriptionPack() {
@@ -53,6 +53,7 @@ class CacheInitializer {
         freePack.setFeatures(List.of("Up to 50 links", "Basic Analytics", "Standard Support"));
         freePack.setPrivileges(getFreePlanPrivileges());
         freePack.setSelected(false);
+        freePack.setCreatedAt(System.currentTimeMillis());
         freePack.setDefaultPack(true);
         return freePack;
     }
@@ -71,6 +72,7 @@ class CacheInitializer {
         proPack.setFeatures(List.of("Up to 5000 links", "Advanced Analytics", "Custom Domains", "Priority Support"));
         proPack.setPrivileges(getProPlanPrivileges());
         proPack.setSelected(true);
+        proPack.setCreatedAt(System.currentTimeMillis());
         proPack.setDefaultPack(false);
         return proPack;
     }
@@ -89,6 +91,7 @@ class CacheInitializer {
         enterprisePack.setFeatures(List.of("Everything in Pro", "Unlimited links", "Advanced Security", "24/7 Premium Support"));
         enterprisePack.setPrivileges(getEnterprisePlanPrivileges());
         enterprisePack.setSelected(false);
+        enterprisePack.setCreatedAt(System.currentTimeMillis());
         enterprisePack.setDefaultPack(false);
         return enterprisePack;
     }
@@ -124,6 +127,14 @@ class CacheInitializer {
                 PackPrivilege.PREMIUM_247_SUPPORT.value() + VALUE_TRUE,
                 PackPrivilege.ANALYTIC.value() + ":" + AnalyticMetricType.ALL_METRICS.metricName()
         );
+    }
+
+    private void pushPackToDatabase(final SubscriptionPack pack) {
+        if (Boolean.parseBoolean(environment.getProperty(
+                "subscription.packs.initializer.push-default-packs-to-database",
+                "false"))) {
+            subscriptionPackDatabaseService.saveOrUpdatePack(INITIALIZER, pack);
+        }
     }
 
 }

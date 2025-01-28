@@ -1,5 +1,6 @@
 package com.akgarg.subsservice.v1.subs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,12 @@ import lombok.ToString;
 @Setter
 @ToString
 public class SubscriptionDTO {
+
+    @JsonIgnore
+    private String email;
+
+    @JsonIgnore
+    private String name;
 
     @JsonProperty("id")
     private String id;
@@ -47,6 +54,7 @@ public class SubscriptionDTO {
         subscriptionDTO.setStatus(SubscriptionStatus.valueOf(subscription.getStatus()));
         subscriptionDTO.setActivatedAt(subscription.getSubscribedAt());
         subscriptionDTO.setExpiresAt(subscription.getExpiresAt());
+        subscriptionDTO.setDefaultSubscription(subscription.getDefaultSubscription());
         return subscriptionDTO;
     }
 
