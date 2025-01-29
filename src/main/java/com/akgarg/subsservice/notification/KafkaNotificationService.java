@@ -40,7 +40,8 @@ public class KafkaNotificationService implements NotificationService {
         final var notificationEvent = new SubscriptionNotificationEvent();
         notificationEvent.setNotificationType(NotificationType.EMAIL);
         notificationEvent.setHtml(true);
-        notificationEvent.setRecipient(new String[]{subscription.getEmail()});
+        notificationEvent.setSubject("Subscription Activated Successfully \uD83C\uDF89");
+        notificationEvent.setRecipients(new String[]{subscription.getEmail()});
         notificationEvent.setBody(getEmailBody(subscription, pack));
         sendEvent(requestId, notificationEvent);
     }
