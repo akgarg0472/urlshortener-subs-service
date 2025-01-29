@@ -25,7 +25,7 @@ Ensure the following dependencies are installed before running the project:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/urlshortener-subs-service
+git clone https://github.com/akgarg0472/urlshortener-subs-service
 cd urlshortener-subs-service
 ```
 
