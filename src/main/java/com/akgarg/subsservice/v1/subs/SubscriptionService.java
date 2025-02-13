@@ -12,6 +12,7 @@ import com.akgarg.subsservice.v1.subs.cache.SubscriptionCache;
 import com.akgarg.subsservice.v1.subs.db.SubscriptionDatabaseService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizers;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class SubscriptionService {
     private final SubscriptionPackService subscriptionPackService;
     private final NotificationService notificationService;
     private final SubscriptionCache subscriptionCache;
+    private final CacheManagerCustomizers cacheManagerCustomizers;
 
     public void subscribeDefaultPack(final String requestId, final String userId) {
         log.info("[{}] Subscribing default pack", requestId);
@@ -107,7 +109,8 @@ public class SubscriptionService {
         if (activeSubscription.isPresent()) {
             activeSubscription.get().setExpiresAt(System.currentTimeMillis());
             activeSubscription.get().setStatus(SubscriptionStatus.EXPIRED.name());
-            subscriptionDatabaseService.updateSubscription(requestId, activeSubscription.get());
+            final var updatedSubscription = subscriptionDatabaseService.updateSubscription(requestId, activeSubscription.get());
+            subscriptionCache.addSubscription(requestId, SubscriptionDTO.fromSubscription(updatedSubscription));
             log.info("{} current subscription marked as {}", requestId, SubscriptionStatus.EXPIRED.name());
         }
 

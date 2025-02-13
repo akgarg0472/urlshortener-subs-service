@@ -37,7 +37,7 @@ public class RedisSubscriptionCache implements SubscriptionCache {
             final var timeout = subscriptionDTO.getExpiresAt() - System.currentTimeMillis();
             final var value = objectMapper.writeValueAsString(subscriptionDTO);
             redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.MILLISECONDS);
-            redisTemplate.opsForHash().putIfAbsent(ALL_SUBSCRIPTION_MAP_KEY, key, value);
+            redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, value);
             log.info("[{}] Successfully added subscription to cache: {}", requestId, subscriptionDTO);
         } catch (Exception e) {
             log.error("[{}] Failed to add subscription to cache: {}", requestId, subscriptionDTO, e);
@@ -66,8 +66,10 @@ public class RedisSubscriptionCache implements SubscriptionCache {
         log.debug("[{}] Adding subscriptions to cache for: {}", requestId, userId);
 
         try {
-            final var value = objectMapper.writeValueAsString(subscriptions);
-            redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, userId, value);
+            for (final var subscription : subscriptions) {
+                final var value = objectMapper.writeValueAsString(subscription);
+                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, userId, value);
+            }
         } catch (Exception e) {
             log.error("[{}] Failed to add subscriptions to cache", requestId, e);
         }

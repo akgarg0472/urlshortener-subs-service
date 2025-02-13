@@ -13,6 +13,6 @@ public interface SubscriptionDatabaseService {
 
     Collection<Subscription> findAllSubscriptionsForUserId(String requestId, String userId);
 
-    void updateSubscription(String requestId, Subscription subscription);
+    Subscription updateSubscription(String requestId, Subscription subscription);
 
 }

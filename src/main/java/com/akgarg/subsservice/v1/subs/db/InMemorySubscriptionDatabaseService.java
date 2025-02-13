@@ -45,10 +45,11 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     }
 
     @Override
-    public void updateSubscription(final String requestId, final Subscription subscription) {
+    public Subscription updateSubscription(final String requestId, final Subscription subscription) {
         log.info("[{}] updating subscription {}", requestId, subscription);
         subscriptions.remove(subscription);
         subscriptions.add(subscription);
+        return subscription;
     }
 
 }

@@ -53,11 +53,11 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
     }
 
     @Override
-    public void updateSubscription(final String requestId, final Subscription subscription) {
+    public Subscription updateSubscription(final String requestId, final Subscription subscription) {
         log.info("[{}] updating subscription with id: {}", requestId, subscription.getId());
 
         try {
-            subscriptionRepository.save(subscription);
+            return subscriptionRepository.save(subscription);
         } catch (Exception e) {
             log.error("[{}] failed to update subscription {}", requestId, subscription, e);
             throw e;
