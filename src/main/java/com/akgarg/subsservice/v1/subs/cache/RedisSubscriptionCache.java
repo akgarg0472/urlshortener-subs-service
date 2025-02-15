@@ -35,10 +35,19 @@ public class RedisSubscriptionCache implements SubscriptionCache {
         try {
             final var key = createSubscriptionKey(subscriptionDTO.getUserId());
             final var timeout = subscriptionDTO.getExpiresAt() - System.currentTimeMillis();
-            final var value = objectMapper.writeValueAsString(subscriptionDTO);
-            redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.MILLISECONDS);
-            redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, value);
-            log.info("[{}] Successfully added subscription to cache: {}", requestId, subscriptionDTO);
+            final var subscription = objectMapper.writeValueAsString(subscriptionDTO);
+            redisTemplate.opsForValue().set(key, subscription, timeout, TimeUnit.MILLISECONDS);
+
+            final var existingSubscriptions = getAllSubscriptionsByUserId(requestId, subscriptionDTO.getUserId());
+
+            if (existingSubscriptions.isPresent()) {
+                existingSubscriptions.get().add(subscriptionDTO);
+                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, objectMapper.writeValueAsString(existingSubscriptions.get()));
+            } else {
+                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, objectMapper.writeValueAsString(List.of(subscriptionDTO)));
+            }
+
+            log.info("[{}] Successfully added subscription to cache", requestId);
         } catch (Exception e) {
             log.error("[{}] Failed to add subscription to cache: {}", requestId, subscriptionDTO, e);
         }
@@ -66,10 +75,8 @@ public class RedisSubscriptionCache implements SubscriptionCache {
         log.debug("[{}] Adding subscriptions to cache for: {}", requestId, userId);
 
         try {
-            for (final var subscription : subscriptions) {
-                final var value = objectMapper.writeValueAsString(subscription);
-                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, userId, value);
-            }
+            final var value = objectMapper.writeValueAsString(subscriptions);
+            redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, userId, value);
         } catch (Exception e) {
             log.error("[{}] Failed to add subscriptions to cache", requestId, e);
         }
