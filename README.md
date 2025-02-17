@@ -1,7 +1,7 @@
 # URL Shortener Subscription Service
 
 ![Java Version](https://img.shields.io/badge/Java-21-blue)
-![version](https://img.shields.io/badge/version-1.6.4-blue)
+![version](https://img.shields.io/badge/version-1.7.0-blue)
 
 ## Introduction
 
@@ -55,25 +55,30 @@ server:
   port: 9099
 ```
 
-#### Eureka Configuration
+#### Consul Configuration
 
-The service is registered with **Eureka Service Discovery** for dynamic service lookup.
+The service is registered with **Consul Service Discovery** for dynamic service lookup.
 
 ```yml
-eureka:
-  client:
-    enabled: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    status-page-url-path: /admin/management/info
-    health-check-url-path: /admin/management/health
+spring:
+  cloud:
+  consul:
+    host: localhost
+    port: 8500
+    discovery:
+      service-name: ${spring.application.name}
+      instance-id: ${spring.application.name}-${spring.application.instance_id:${random.value}}
+      register: true
+      fail-fast: true
+      enabled: true
+      prefer-ip-address: true
+      catalog-services-watch-delay: 30000
+      health-check-interval: 30s
+      register-health-check: off
+      health-check-path: /admin/management/health
+      heartbeat:
+        reregister-service-on-failure: true
 ```
-
-- **eureka.client.enabled**: Enables Eureka client registration.
-- **eureka.client.service-url.defaultZone**: Points to the Eureka server for service registration.
-- **eureka.instance.status-page-url-path**: Specifies the status page path.
-- **eureka.instance.health-check-url-path**: Configures the health check endpoint.
 
 #### Management & Monitoring
 
