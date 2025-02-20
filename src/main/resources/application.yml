@@ -26,7 +26,7 @@ spring:
         health-check-path: null
 
 server:
-  port: 9099
+  port: 0
 
 management:
   info:
