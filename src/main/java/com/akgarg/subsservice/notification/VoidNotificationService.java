@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class VoidNotificationService implements NotificationService {
 
     @Override
-    public void sendSubscriptionSuccessEmail(final String requestId, final SubscriptionDTO subscriptionDTO, final SubscriptionPackDTO subscriptionPackDTO) {
-        log.info("[{}] Sending subscription success: {}", requestId, subscriptionDTO);
+    public void sendSubscriptionSuccessEmail(final SubscriptionDTO subscriptionDTO, final SubscriptionPackDTO subscriptionPackDTO) {
+        log.info("Sending subscription success: {}", subscriptionDTO);
     }
 
 }

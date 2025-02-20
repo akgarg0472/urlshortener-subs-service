@@ -6,6 +6,7 @@ import com.akgarg.subsservice.v1.subs.SubscriptionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
@@ -13,6 +14,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+
+import static com.akgarg.subsservice.utils.SubsUtils.REQUEST_ID_THREAD_CONTEXT_KEY;
 
 @Slf4j
 @Component
@@ -31,9 +34,9 @@ public class KafkaNotificationService implements NotificationService {
     private String notificationTopicName;
 
     @Override
-    public void sendSubscriptionSuccessEmail(final String requestId, final SubscriptionDTO subscription, final SubscriptionPackDTO pack) {
+    public void sendSubscriptionSuccessEmail(final SubscriptionDTO subscription, final SubscriptionPackDTO pack) {
         if (subscription.getEmail() == null || subscription.getEmail().isEmpty()) {
-            log.info("[{}] Subscription email is null or empty", requestId);
+            log.info("Subscription email is null or empty");
             return;
         }
 
@@ -43,27 +46,29 @@ public class KafkaNotificationService implements NotificationService {
         notificationEvent.setSubject("Subscription Activated Successfully \uD83C\uDF89");
         notificationEvent.setRecipients(new String[]{subscription.getEmail()});
         notificationEvent.setBody(getEmailBody(subscription, pack));
-        sendEvent(requestId, notificationEvent);
+        sendEvent(ThreadContext.get(REQUEST_ID_THREAD_CONTEXT_KEY), notificationEvent);
     }
 
     private void sendEvent(final String requestId, final SubscriptionNotificationEvent subscriptionNotificationEvent) {
-        serializeEvent(requestId, subscriptionNotificationEvent)
+        serializeEvent(subscriptionNotificationEvent)
                 .ifPresent(json -> kafkaTemplate.send(notificationTopicName, json)
                         .whenComplete((result, throwable) -> {
                             if (throwable != null) {
                                 log.error("[{}] Failed to send subscription event", requestId, throwable);
                             } else {
-                                log.info("[{}] Successfully sent subscription event", requestId);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("[{}] Successfully sent subscription event", requestId);
+                                }
                             }
                         })
                 );
     }
 
-    private Optional<String> serializeEvent(final String requestId, final SubscriptionNotificationEvent subscriptionNotificationEvent) {
+    private Optional<String> serializeEvent(final SubscriptionNotificationEvent subscriptionNotificationEvent) {
         try {
             return Optional.of(objectMapper.writeValueAsString(subscriptionNotificationEvent));
         } catch (Exception e) {
-            log.error("[{}] Error serializing subscription notification event", requestId, e);
+            log.error("Error serializing subscription notification event", e);
             return Optional.empty();
         }
     }

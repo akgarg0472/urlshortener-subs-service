@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static com.akgarg.subsservice.response.ApiErrorResponse.*;
 
@@ -28,13 +27,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericException(final Exception e) {
-        log.error(
-                "Error in processing request: {}",
-                Map.of("exception_class", e.getClass().getName(), "exception_msg", e.getMessage())
-        );
-
         if (log.isDebugEnabled()) {
-            log.error("Exception: ", e);
+            log.error("Handling exception", e);
         }
 
         final ApiErrorResponse errorResponse = switch (e) {

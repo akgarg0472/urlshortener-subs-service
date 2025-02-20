@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
+import static com.akgarg.subsservice.utils.SubsUtils.maskString;
+
 public record MakeSubscriptionRequest(
 
         @NotBlank(message = "user_id can't be null or empty")
@@ -33,4 +35,19 @@ public record MakeSubscriptionRequest(
         @JsonProperty("name")
         String name
 ) {
+
+    @Override
+    public String toString() {
+        return "{" +
+                "userId='" + maskString(userId) + '\'' +
+                ", packId='" + packId + '\'' +
+                ", paymentId='" + maskString(paymentId) + '\'' +
+                ", amount=" + amount +
+                ", currency='" + currency + '\'' +
+                ", description='" + description + '\'' +
+                ", email='" + maskString(email) + '\'' +
+                ", name='" + maskString(name) + '\'' +
+                '}';
+    }
+
 }

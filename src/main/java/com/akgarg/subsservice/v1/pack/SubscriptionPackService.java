@@ -23,18 +23,18 @@ import java.util.function.Consumer;
 @AllArgsConstructor
 public class SubscriptionPackService {
 
-    private static final String PACK_NOT_FOUND_BY_ID_LOG_MSG = "[{}] pack with id: {} not found";
+    private static final String PACK_NOT_FOUND_BY_ID_LOG_MSG = "Pack with id {} not found";
 
     private final SubscriptionPackDatabaseService subscriptionPackDatabaseService;
     private final SubscriptionPackCache subscriptionPackCache;
 
-    public CreatePackResponse createPack(final String requestId, final CreatePackRequest request) {
-        log.info("[{}] create pack request received: {}", requestId, request);
+    public CreatePackResponse createPack(final CreatePackRequest request) {
+        log.info("Create pack request received: {}", request);
 
-        final var existingPack = getSubscriptionPackByPackId(requestId, request.id());
+        final var existingPack = getSubscriptionPackByPackId(request.id());
 
         if (existingPack.isPresent()) {
-            log.warn("{} pack already exists for id: {}", requestId, request.id());
+            log.warn("Subscription pack already exists for id: {}", request.id());
             return new CreatePackResponse(HttpStatus.CONFLICT.value(),
                     "Pack already exists with id: " + request.id(),
                     SubscriptionPackDTO.fromSubscriptionPack(existingPack.get())
@@ -43,13 +43,13 @@ public class SubscriptionPackService {
 
         final var pack = getSubscriptionPack(request);
 
-        final var savedPack = subscriptionPackDatabaseService.saveOrUpdatePack(requestId, pack);
+        final var savedPack = subscriptionPackDatabaseService.saveOrUpdatePack(pack);
 
-        log.info("[{}] pack created successfully: {}", requestId, savedPack);
+        log.info("Subscription pack created successfully: {}", savedPack);
 
-        subscriptionPackCache.addOrUpdatePack(requestId, savedPack);
+        subscriptionPackCache.addOrUpdatePack(savedPack);
 
-        log.info("[{}] pack created successfully: {}", requestId, savedPack);
+        log.info("Subscription pack created successfully: {}", savedPack);
 
         final var subscriptionPackDTO = SubscriptionPackDTO.fromSubscriptionPack(savedPack);
 
@@ -59,11 +59,10 @@ public class SubscriptionPackService {
         );
     }
 
-    public GetPacksResponse getPacks(final String requestId, final int page, final int limit, final boolean getComparison) {
-        log.debug("[{}] get packs request received, page={}, limit={}", requestId, page, limit);
+    public GetPacksResponse getPacks(final int page, final int limit, final boolean getComparison) {
+        log.debug("Get packs request received, page={}, limit={}", page, limit);
 
         final var subscriptionPacks = subscriptionPackCache.getAllPacks(
-                requestId,
                 page * limit,
                 limit,
                 true,
@@ -71,7 +70,9 @@ public class SubscriptionPackService {
         );
 
         if (subscriptionPacks.isEmpty()) {
-            log.debug("{} fetching packs from database", requestId);
+            if (log.isDebugEnabled()) {
+                log.debug("Fetching subscription packs from database");
+            }
 
             final var pageRequest = PageRequest.of(
                     page,
@@ -86,7 +87,7 @@ public class SubscriptionPackService {
             );
 
             subscriptionPacks.addAll(packs);
-            packs.forEach(pack -> subscriptionPackCache.addOrUpdatePack(requestId, pack));
+            packs.forEach(subscriptionPackCache::addOrUpdatePack);
         }
 
         final var subscriptionPackDTOS = subscriptionPacks.stream()
@@ -101,30 +102,28 @@ public class SubscriptionPackService {
                 .build();
     }
 
-    public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
-        log.info("[{}] retrieving default subscription pack", requestId);
+    public Optional<SubscriptionPack> getDefaultSubscriptionPack() {
+        log.info("Retrieving default subscription pack");
 
-        var subscriptionPack = subscriptionPackCache.getDefaultSubscriptionPack(requestId);
+        var subscriptionPack = subscriptionPackCache.getDefaultSubscriptionPack();
 
         if (subscriptionPack.isPresent()) {
-            log.debug("[{}] retrieved default subscription pack from cache", requestId);
+            log.debug("Retrieved default subscription pack from cache");
             return subscriptionPack;
         }
 
-        subscriptionPack = subscriptionPackDatabaseService.findDefaultSubscriptionPack(requestId);
-
-        subscriptionPack.ifPresent(pack -> subscriptionPackCache.addOrUpdatePack(requestId, pack));
-
+        subscriptionPack = subscriptionPackDatabaseService.findDefaultSubscriptionPack();
+        subscriptionPack.ifPresent(subscriptionPackCache::addOrUpdatePack);
         return subscriptionPack;
     }
 
-    public UpdatePackResponse updatePack(final String requestId, final String packId, final UpdatePackRequest request) {
-        log.info("[{}] request received to update pack with id: {} -> {}", requestId, packId, request);
+    public UpdatePackResponse updatePack(final String packId, final UpdatePackRequest request) {
+        log.info("Request received to update pack with id: {} -> {}", packId, request);
 
-        final var packOptional = getSubscriptionPackByPackId(requestId, packId);
+        final var packOptional = getSubscriptionPackByPackId(packId);
 
         if (packOptional.isEmpty()) {
-            log.warn(PACK_NOT_FOUND_BY_ID_LOG_MSG, requestId, packId);
+            log.warn(PACK_NOT_FOUND_BY_ID_LOG_MSG, packId);
 
             return new UpdatePackResponse(
                     HttpStatus.BAD_REQUEST.value(),
@@ -135,12 +134,14 @@ public class SubscriptionPackService {
 
         final var pack = packOptional.get();
 
-        log.debug("[{}] existing pack: {}", requestId, pack);
+        if (log.isDebugEnabled()) {
+            log.debug("Existing pack: {}", pack);
+        }
 
         final boolean updated = updatePackFields(pack, request);
 
         if (!updated) {
-            log.info("[{}] pack not updated because no new field was provided", requestId);
+            log.info("Pack not updated because no new field was provided");
             return new UpdatePackResponse(HttpStatus.OK.value(),
                     "No fields provided for update. The pack remains unchanged",
                     null
@@ -149,11 +150,11 @@ public class SubscriptionPackService {
 
         pack.setUpdatedAt(System.currentTimeMillis());
 
-        final var updatedPack = subscriptionPackDatabaseService.saveOrUpdatePack(requestId, pack);
+        final var updatedPack = subscriptionPackDatabaseService.saveOrUpdatePack(pack);
         final var updatedPackDTO = SubscriptionPackDTO.fromSubscriptionPack(updatedPack);
-        subscriptionPackCache.addOrUpdatePack(requestId, updatedPack);
+        subscriptionPackCache.addOrUpdatePack(updatedPack);
 
-        log.info("[{}] pack updated successfully: {}", requestId, updatedPackDTO);
+        log.info("Subscription pack updated successfully: {}", updatedPackDTO);
 
         return new UpdatePackResponse(HttpStatus.OK.value(),
                 "Pack updated successfully",
@@ -161,13 +162,13 @@ public class SubscriptionPackService {
         );
     }
 
-    public DeletePackResponse deletePack(final String requestId, final String packId) {
-        log.info("[{}] received request to delete pack: {}", requestId, packId);
+    public DeletePackResponse deletePack(final String packId) {
+        log.info("Received request to delete pack with id: {}", packId);
 
-        final var packOptional = getSubscriptionPackByPackId(requestId, packId);
+        final var packOptional = getSubscriptionPackByPackId(packId);
 
         if (packOptional.isEmpty()) {
-            log.error(PACK_NOT_FOUND_BY_ID_LOG_MSG, requestId, packId);
+            log.error(PACK_NOT_FOUND_BY_ID_LOG_MSG, packId);
             return new DeletePackResponse(
                     HttpStatus.BAD_REQUEST.value(),
                     "No pack found to delete",
@@ -189,11 +190,11 @@ public class SubscriptionPackService {
         pack.setVisible(false);
         pack.setSelected(false);
 
-        final var deletedPack = subscriptionPackDatabaseService.saveOrUpdatePack(requestId, pack);
+        final var deletedPack = subscriptionPackDatabaseService.saveOrUpdatePack(pack);
 
-        log.info("[{}] pack deleted successfully", requestId);
+        log.info("Pack with id {} deleted successfully", packId);
 
-        subscriptionPackCache.deletePack(requestId, packId);
+        subscriptionPackCache.deletePack(packId);
 
         final var subscriptionPackDTO = SubscriptionPackDTO.fromSubscriptionPack(deletedPack);
 
@@ -258,9 +259,9 @@ public class SubscriptionPackService {
         return false;
     }
 
-    public Optional<SubscriptionPack> getSubscriptionPackByPackId(final String requestId, final String packId) {
-        return subscriptionPackCache.getPackById(requestId, packId)
-                .or(() -> subscriptionPackDatabaseService.findByPackId(requestId, packId));
+    public Optional<SubscriptionPack> getSubscriptionPackByPackId(final String packId) {
+        return subscriptionPackCache.getPackById(packId)
+                .or(() -> subscriptionPackDatabaseService.findByPackId(packId));
     }
 
     private SubscriptionPack getSubscriptionPack(final CreatePackRequest request) {

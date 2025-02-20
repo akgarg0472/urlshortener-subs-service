@@ -1,5 +1,7 @@
 package com.akgarg.subsservice.kafka;
 
+import static com.akgarg.subsservice.utils.SubsUtils.maskString;
+
 public record PaymentCompleteEvent(
         String paymentId,
         String userId,
@@ -10,4 +12,19 @@ public record PaymentCompleteEvent(
         String email,
         String name
 ) {
+
+    @Override
+    public String toString() {
+        return "{" +
+                "paymentId='" + maskString(paymentId) + '\'' +
+                ", userId='" + maskString(userId) + '\'' +
+                ", packId='" + maskString(packId) + '\'' +
+                ", amount=" + amount +
+                ", currency='" + currency + '\'' +
+                ", paymentGateway='" + paymentGateway + '\'' +
+                ", email='" + maskString(email) + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
 }

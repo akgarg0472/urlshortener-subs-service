@@ -24,21 +24,23 @@ public class InMemorySubscriptionPackCache implements SubscriptionPackCache {
     }
 
     @Override
-    public void addOrUpdatePack(final String requestId, final SubscriptionPack subscriptionPack) {
+    public void addOrUpdatePack(final SubscriptionPack subscriptionPack) {
         Objects.requireNonNull(subscriptionPack);
-        log.info("[{}] Adding pack {}", requestId, subscriptionPack);
+        log.info("Adding Subscription pack {}", subscriptionPack);
         subscriptionPacks.put(subscriptionPack.getId(), subscriptionPack);
     }
 
     @Override
     public List<SubscriptionPack> getAllPacks(
-            final String requestId,
             final int skip,
             final int limit,
             final boolean visible,
             final boolean deleted
     ) {
-        log.debug("[{}] Getting packs from cache", requestId);
+        if (log.isDebugEnabled()) {
+            log.debug("Retrieving subscription packs from cache");
+        }
+
         return subscriptionPacks
                 .values()
                 .stream()
@@ -49,22 +51,22 @@ public class InMemorySubscriptionPackCache implements SubscriptionPackCache {
     }
 
     @Override
-    public Optional<SubscriptionPack> getPackById(final String requestId, final String packId) {
-        log.info("[{}] Getting subscription pack by id {}", requestId, packId);
+    public Optional<SubscriptionPack> getPackById(final String packId) {
+        log.info("Getting subscription pack by id {}", packId);
         return Optional.of(subscriptionPacks.get(packId));
     }
 
     @Override
-    public void deletePack(final String requestId, final String packId) {
-        log.info("[{}] Deleting pack {}", requestId, packId);
+    public void deletePack(final String packId) {
+        log.warn("Deleting subscription pack with id: {}", packId);
         final var removedPack = subscriptionPacks.remove(packId);
         if (removedPack != null) {
-            log.info("[{}] Pack {} deleted", requestId, removedPack);
+            log.warn("Subscription pack having id {} deleted", removedPack);
         }
     }
 
     @Override
-    public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
+    public Optional<SubscriptionPack> getDefaultSubscriptionPack() {
         return subscriptionPacks.values()
                 .stream()
                 .filter(SubscriptionPack::getDefaultPack)

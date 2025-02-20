@@ -7,14 +7,14 @@ import java.util.Optional;
 
 public interface SubscriptionPackCache {
 
-    void addOrUpdatePack(String requestId, SubscriptionPack subscriptionPack);
+    void addOrUpdatePack(SubscriptionPack subscriptionPack);
 
-    List<SubscriptionPack> getAllPacks(String requestId, int skip, int limit, boolean visible, boolean deleted);
+    List<SubscriptionPack> getAllPacks(int skip, int limit, boolean visible, boolean deleted);
 
-    Optional<SubscriptionPack> getPackById(final String requestId, String packId);
+    Optional<SubscriptionPack> getPackById(String packId);
 
-    void deletePack(String requestId, String packId);
+    void deletePack(String packId);
 
-    Optional<SubscriptionPack> getDefaultSubscriptionPack(String requestId);
+    Optional<SubscriptionPack> getDefaultSubscriptionPack();
 
 }

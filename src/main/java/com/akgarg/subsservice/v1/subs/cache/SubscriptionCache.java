@@ -7,12 +7,12 @@ import java.util.Optional;
 
 public interface SubscriptionCache {
 
-    void addSubscription(String requestId, SubscriptionDTO subscriptionDTO);
+    void addSubscription(SubscriptionDTO subscriptionDTO);
 
-    Optional<SubscriptionDTO> getActiveSubscriptionByUserId(String requestId, String userId);
+    Optional<SubscriptionDTO> getActiveSubscriptionByUserId(String userId);
 
-    void addUserSubscriptions(String requestId, final String userId, Collection<SubscriptionDTO> subscriptions);
+    void addUserSubscriptions(final String userId, Collection<SubscriptionDTO> subscriptions);
 
-    Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(String requestId, String userId);
+    Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(String userId);
 
 }

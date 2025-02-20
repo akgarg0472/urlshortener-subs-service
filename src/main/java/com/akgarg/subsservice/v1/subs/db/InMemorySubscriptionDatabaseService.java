@@ -19,8 +19,8 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     private final Collection<Subscription> subscriptions = new ArrayList<>();
 
     @Override
-    public Optional<Subscription> findActiveSubscription(final String requestId, final String userId) {
-        log.info("[{}] finding active subscription for user {}", requestId, userId);
+    public Optional<Subscription> findActiveSubscription(final String userId) {
+        log.info("Finding active subscription for user {}", userId);
         return subscriptions
                 .stream()
                 .filter(subscription -> subscription.getUserId().equals(userId) &&
@@ -29,14 +29,14 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     }
 
     @Override
-    public Subscription addSubscription(final String requestId, final Subscription subscription) {
-        log.info("[{}] adding new subscription {}", requestId, subscription);
+    public Subscription addSubscription(final Subscription subscription) {
+        log.info("Adding new subscription with id {}", subscription.getId());
         subscriptions.add(subscription);
         return subscription;
     }
 
     @Override
-    public Collection<Subscription> findAllSubscriptionsForUserId(final String requestId, final String userId) {
+    public Collection<Subscription> findAllSubscriptionsForUserId(final String userId) {
         return subscriptions
                 .stream()
                 .filter(subscription -> subscription.getUserId().equalsIgnoreCase(userId))
@@ -45,8 +45,8 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     }
 
     @Override
-    public Subscription updateSubscription(final String requestId, final Subscription subscription) {
-        log.info("[{}] updating subscription {}", requestId, subscription);
+    public Subscription updateSubscription(final Subscription subscription) {
+        log.info("Updating subscription {}", subscription);
         subscriptions.remove(subscription);
         subscriptions.add(subscription);
         return subscription;

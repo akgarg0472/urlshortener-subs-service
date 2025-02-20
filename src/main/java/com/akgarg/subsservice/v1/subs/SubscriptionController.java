@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import static com.akgarg.subsservice.utils.SubsUtils.USER_ID_HEADER_NAME;
 import static com.akgarg.subsservice.utils.SubsUtils.checkValidationResultAndThrowExceptionOnFailure;
 
 @RestController
@@ -19,25 +20,21 @@ import static com.akgarg.subsservice.utils.SubsUtils.checkValidationResultAndThr
 @RequiredArgsConstructor
 public class SubscriptionController {
 
-    private static final String USER_ID_HEADER_NAME = "X-USER-ID";
-    private static final String REQUEST_ID_HEADER = "X-Request-ID";
 
     private final SubscriptionService subscriptionService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MakeSubscriptionResponse> makeSubscription(
-            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestBody @Valid final MakeSubscriptionRequest request,
             final BindingResult validationResult
     ) {
         checkValidationResultAndThrowExceptionOnFailure(validationResult);
-        final var response = subscriptionService.subscribe(requestId, request);
+        final var response = subscriptionService.subscribe(request);
         return ResponseEntity.status(response.statusCode()).body(response);
     }
 
     @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetSubscriptionResponse> getActiveSubscription(
-            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
             @RequestParam(value = "userId") final String userId
     ) {
@@ -57,13 +54,12 @@ public class SubscriptionController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        final var response = subscriptionService.getActiveUserSubscription(requestId, userId);
+        final var response = subscriptionService.getActiveUserSubscription(userId);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetAllSubscriptionResponse> getAllSubscriptionsForUser(
-            @RequestHeader(value = REQUEST_ID_HEADER) final String requestId,
             @RequestHeader(value = USER_ID_HEADER_NAME) final String requestIdHeader,
             @RequestParam(value = "userId") final String userId) {
         if (requestIdHeader == null || userId == null) {
@@ -82,7 +78,7 @@ public class SubscriptionController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        final var response = subscriptionService.getAllSubscriptions(requestId, userId);
+        final var response = subscriptionService.getAllSubscriptions(userId);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

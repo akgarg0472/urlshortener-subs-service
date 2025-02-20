@@ -41,26 +41,26 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public void addSubscription(final String requestId, final SubscriptionDTO subscriptionDTO) {
-        log.info("[{}] Adding subscription {} to cache", requestId, Objects.requireNonNull(subscriptionDTO));
-        subscriptions.put(requestId, subscriptionDTO);
+    public void addSubscription(final SubscriptionDTO subscriptionDTO) {
+        log.info("Adding subscription {} to cache", Objects.requireNonNull(subscriptionDTO));
+        subscriptions.put(subscriptionDTO.getId(), subscriptionDTO);
     }
 
     @Override
-    public Optional<SubscriptionDTO> getActiveSubscriptionByUserId(final String requestId, final String userId) {
-        log.info("[{}] Getting subscription {} from cache", requestId, Objects.requireNonNull(userId));
+    public Optional<SubscriptionDTO> getActiveSubscriptionByUserId(final String userId) {
+        log.info("Getting subscription for user {} from cache", Objects.requireNonNull(userId));
         return Optional.ofNullable(subscriptions.get(userId));
     }
 
     @Override
-    public void addUserSubscriptions(final String requestId, final String userId, final Collection<SubscriptionDTO> subscriptions) {
-        log.info("[{}] Adding all subscription to cache for userId {}", requestId, Objects.requireNonNull(userId));
+    public void addUserSubscriptions(final String userId, final Collection<SubscriptionDTO> subscriptions) {
+        log.info("Adding all subscription to cache for userId {}", Objects.requireNonNull(userId));
         groupedSubscriptions.put(userId, subscriptions);
     }
 
     @Override
-    public Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(final String requestId, final String userId) {
-        log.debug("[{}] Getting all subscriptions from cache", requestId);
+    public Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(final String userId) {
+        log.debug("Getting all subscriptions from cache for userId {}", Objects.requireNonNull(userId));
         return Optional.of(groupedSubscriptions.getOrDefault(userId, Collections.emptyList())
                 .stream()
                 .sorted(Comparator.comparing(SubscriptionDTO::getActivatedAt).reversed())

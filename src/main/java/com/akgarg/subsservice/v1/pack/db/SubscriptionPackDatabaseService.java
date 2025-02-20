@@ -8,12 +8,12 @@ import java.util.Optional;
 
 public interface SubscriptionPackDatabaseService {
 
-    Optional<SubscriptionPack> findByPackId(String requestId, String packId);
+    Optional<SubscriptionPack> findByPackId(String packId);
 
-    SubscriptionPack saveOrUpdatePack(String requestId, SubscriptionPack plan);
+    SubscriptionPack saveOrUpdatePack(SubscriptionPack plan);
 
     List<SubscriptionPack> findAllByVisibleAndDeleted(boolean visible, boolean deleted, PageRequest pageRequest);
 
-    Optional<SubscriptionPack> findDefaultSubscriptionPack(String requestId);
+    Optional<SubscriptionPack> findDefaultSubscriptionPack();
 
 }

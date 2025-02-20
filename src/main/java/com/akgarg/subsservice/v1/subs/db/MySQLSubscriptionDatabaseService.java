@@ -19,47 +19,47 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
     private final SubscriptionRepository subscriptionRepository;
 
     @Override
-    public Optional<Subscription> findActiveSubscription(final String requestId, final String userId) {
-        log.info("[{}] finding active subscription for user {}", requestId, userId);
+    public Optional<Subscription> findActiveSubscription(final String userId) {
+        log.info("finding active subscription for userId {}", userId);
 
         try {
             return subscriptionRepository.findByUserIdAndStatusEqualsIgnoreCase(userId, SubscriptionStatus.ACTIVE.name());
         } catch (Exception e) {
-            log.error("[{}] failed to find active subscription for user {}", requestId, userId, e);
+            log.error("Failed to find active subscription for userId {}", userId, e);
         }
         return Optional.empty();
     }
 
     @Override
-    public Subscription addSubscription(final String requestId, final Subscription subscription) {
-        log.info("[{}] adding new subscription with id: {}", requestId, subscription.getId());
+    public Subscription addSubscription(final Subscription subscription) {
+        log.info("Adding new subscription with id {}", subscription.getId());
 
         try {
             return subscriptionRepository.save(subscription);
         } catch (Exception e) {
-            log.error("[{}] failed to add new subscription", requestId, e);
+            log.error("Failed to add new subscription", e);
             throw e;
         }
     }
 
     @Override
-    public Collection<Subscription> findAllSubscriptionsForUserId(final String requestId, final String userId) {
+    public Collection<Subscription> findAllSubscriptionsForUserId(final String userId) {
         try {
             return subscriptionRepository.findAllByUserIdOrderBySubscribedAtDesc(userId);
         } catch (Exception e) {
-            log.error("Error finding all subscriptions for user {}", userId, e);
+            log.error("Error finding all subscriptions for userId {}", userId, e);
             throw e;
         }
     }
 
     @Override
-    public Subscription updateSubscription(final String requestId, final Subscription subscription) {
-        log.info("[{}] updating subscription with id: {}", requestId, subscription.getId());
+    public Subscription updateSubscription(final Subscription subscription) {
+        log.info("Updating subscription with id {}", subscription.getId());
 
         try {
             return subscriptionRepository.save(subscription);
         } catch (Exception e) {
-            log.error("[{}] failed to update subscription {}", requestId, subscription, e);
+            log.error("Failed to update subscription with id{}", subscription.getId(), e);
             throw e;
         }
     }

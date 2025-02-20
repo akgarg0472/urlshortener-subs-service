@@ -5,6 +5,6 @@ import com.akgarg.subsservice.v1.subs.SubscriptionDTO;
 
 public interface NotificationService {
 
-    void sendSubscriptionSuccessEmail(String requestId, SubscriptionDTO subscriptionDTO, SubscriptionPackDTO subscriptionPackDTO);
+    void sendSubscriptionSuccessEmail(SubscriptionDTO subscriptionDTO, SubscriptionPackDTO subscriptionPackDTO);
 
 }

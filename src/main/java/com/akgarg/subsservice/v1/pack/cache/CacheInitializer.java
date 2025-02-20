@@ -16,7 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 class CacheInitializer {
 
-    private static final String INITIALIZER = "initializer";
     private static final String VALUE_TRUE = ":true";
     private static final String VALUE_ADVANCED = ":advanced";
 
@@ -27,15 +26,15 @@ class CacheInitializer {
     @PostConstruct
     public void init() {
         final var freePack = getFreeSubscriptionPack();
-        subscriptionPackCache.addOrUpdatePack(INITIALIZER, freePack);
+        subscriptionPackCache.addOrUpdatePack(freePack);
         pushPackToDatabase(freePack);
 
         final var proPack = getProSubscriptionPack();
-        subscriptionPackCache.addOrUpdatePack(INITIALIZER, proPack);
+        subscriptionPackCache.addOrUpdatePack(proPack);
         pushPackToDatabase(proPack);
 
         final var enterprisePack = getEnterpriseSubscriptionPack();
-        subscriptionPackCache.addOrUpdatePack(INITIALIZER, enterprisePack);
+        subscriptionPackCache.addOrUpdatePack(enterprisePack);
         pushPackToDatabase(enterprisePack);
     }
 
@@ -133,7 +132,7 @@ class CacheInitializer {
         if (Boolean.parseBoolean(environment.getProperty(
                 "subscription.packs.initializer.push-default-packs-to-database",
                 "false"))) {
-            subscriptionPackDatabaseService.saveOrUpdatePack(INITIALIZER, pack);
+            subscriptionPackDatabaseService.saveOrUpdatePack(pack);
         }
     }
 

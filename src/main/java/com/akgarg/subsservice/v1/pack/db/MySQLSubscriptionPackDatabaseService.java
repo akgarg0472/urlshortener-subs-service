@@ -19,21 +19,21 @@ public class MySQLSubscriptionPackDatabaseService implements SubscriptionPackDat
     private final SubscriptionPackRepository subscriptionPackRepository;
 
     @Override
-    public Optional<SubscriptionPack> findByPackId(final String requestId, final String packId) {
-        log.info("[{}] Getting subscription pack by id {}", requestId, packId);
+    public Optional<SubscriptionPack> findByPackId(final String packId) {
+        log.info("Getting subscription pack by id {}", packId);
 
         try {
             return subscriptionPackRepository.findById(packId);
         } catch (Exception e) {
-            log.error("[{}] error finding Pack by Pack Id: {}", requestId, packId, e);
+            log.error("error finding Pack by Pack Id: {}", packId, e);
         }
 
         return Optional.empty();
     }
 
     @Override
-    public SubscriptionPack saveOrUpdatePack(final String requestId, final SubscriptionPack plan) {
-        log.info("[{}] Save or Update Pack: {}", requestId, plan);
+    public SubscriptionPack saveOrUpdatePack(final SubscriptionPack plan) {
+        log.info("Save or Update Pack: {}", plan);
         return subscriptionPackRepository.save(plan);
     }
 
@@ -43,8 +43,8 @@ public class MySQLSubscriptionPackDatabaseService implements SubscriptionPackDat
     }
 
     @Override
-    public Optional<SubscriptionPack> findDefaultSubscriptionPack(final String requestId) {
-        log.info("[{}] Find Default Subscription Pack", requestId);
+    public Optional<SubscriptionPack> findDefaultSubscriptionPack() {
+        log.info("Find Default Subscription Pack");
         return subscriptionPackRepository.findByDefaultPackTrue();
     }
 

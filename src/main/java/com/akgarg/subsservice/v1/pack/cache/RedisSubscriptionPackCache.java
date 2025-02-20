@@ -29,8 +29,8 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void addOrUpdatePack(final String requestId, final SubscriptionPack subscriptionPack) {
-        log.info("[{}] Adding subscription pack {}", requestId, subscriptionPack);
+    public void addOrUpdatePack(final SubscriptionPack subscriptionPack) {
+        log.info("Adding subscription pack {}", subscriptionPack);
 
         try {
             final var pack = objectMapper.writeValueAsString(subscriptionPack);
@@ -40,15 +40,15 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
                 redisTemplate.opsForValue().set(REDIS_DEFAULT_SUBS_PACK_ID, pack, SUBSCRIPTION_CACHE_EXPIRATION, TimeUnit.MILLISECONDS);
             }
 
-            log.info("[{}] Successfully added subscription pack", requestId);
+            log.info("Successfully added subscription pack");
         } catch (Exception e) {
-            log.error("[{}] Failed to add subscription pack", requestId, e);
+            log.error("Failed to add subscription pack", e);
         }
     }
 
     @Override
-    public List<SubscriptionPack> getAllPacks(final String requestId, final int skip, final int limit, final boolean visible, final boolean deleted) {
-        log.debug("[{}] Getting all subscription packs. skip={}, limit={}, visible={}, deleted={}", requestId, skip, limit, visible, deleted);
+    public List<SubscriptionPack> getAllPacks(final int skip, final int limit, final boolean visible, final boolean deleted) {
+        log.debug("Getting all subscription packs. skip={}, limit={}, visible={}, deleted={}", skip, limit, visible, deleted);
         final var packs = new ArrayList<SubscriptionPack>();
 
         try {
@@ -59,40 +59,40 @@ public class RedisSubscriptionPackCache implements SubscriptionPackCache {
                 }
             }
         } catch (Exception e) {
-            log.error("[{}] Failed to retrieve all subscription packs", requestId, e);
+            log.error("Failed to retrieve all subscription packs", e);
         }
 
         return packs;
     }
 
     @Override
-    public Optional<SubscriptionPack> getPackById(final String requestId, final String packId) {
+    public Optional<SubscriptionPack> getPackById(final String packId) {
         try {
-            log.info("[{}] Getting subscription pack by id {}", requestId, packId);
+            log.info("Getting subscription pack by id {}", packId);
             final var object = redisTemplate.opsForValue().get(createPackKey(packId));
             if (object != null) {
                 return Optional.of(objectMapper.readValue(object, SubscriptionPack.class));
             }
         } catch (Exception e) {
-            log.error("[{}] Failed to fetch subscription pack {}", requestId, packId, e);
+            log.error("Failed to fetch subscription pack {}", packId, e);
         }
         return Optional.empty();
     }
 
     @Override
-    public void deletePack(final String requestId, final String packId) {
-        log.info("[{}] Deleting subscription pack {}", requestId, packId);
+    public void deletePack(final String packId) {
+        log.info("Deleting subscription pack {}", packId);
 
         try {
             redisTemplate.delete(createPackKey(packId));
         } catch (Exception e) {
-            log.error("[{}] Failed to delete subscription pack {}", requestId, packId, e);
+            log.error("Failed to delete subscription pack {}", packId, e);
         }
     }
 
     @Override
-    public Optional<SubscriptionPack> getDefaultSubscriptionPack(final String requestId) {
-        return getPackById(requestId, REDIS_DEFAULT_SUBS_PACK_ID);
+    public Optional<SubscriptionPack> getDefaultSubscriptionPack() {
+        return getPackById(REDIS_DEFAULT_SUBS_PACK_ID);
     }
 
     private String createPackKey(final String packId) {

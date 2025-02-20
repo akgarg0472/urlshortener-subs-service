@@ -7,12 +7,12 @@ import java.util.Optional;
 
 public interface SubscriptionDatabaseService {
 
-    Optional<Subscription> findActiveSubscription(String requestId, String userId);
+    Optional<Subscription> findActiveSubscription(String userId);
 
-    Subscription addSubscription(String requestId, Subscription subscription);
+    Subscription addSubscription(Subscription subscription);
 
-    Collection<Subscription> findAllSubscriptionsForUserId(String requestId, String userId);
+    Collection<Subscription> findAllSubscriptionsForUserId(String userId);
 
-    Subscription updateSubscription(String requestId, Subscription subscription);
+    Subscription updateSubscription(Subscription subscription);
 
 }
