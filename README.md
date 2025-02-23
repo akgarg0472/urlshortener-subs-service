@@ -1,7 +1,7 @@
 # URL Shortener Subscription Service
 
 ![Java Version](https://img.shields.io/badge/Java-21-blue)
-![version](https://img.shields.io/badge/version-1.8.1-blue)
+![version](https://img.shields.io/badge/version-1.8.2-blue)
 
 ## Introduction
 
@@ -217,7 +217,7 @@ variables that you can customize:
 - **LOGGING_FILE_BASE_PATH**: Specifies the base path for log files.
     - Default value: `/tmp`
 
-- **LOGGING_LEVEL**: Specifies the log level for the application.
+- **LOG_LEVEL**: Specifies the log level for the application.
     - Default value: `INFO`
     - Allowed values: `DEBUG`, `INFO`, `WARN`, `ERROR`
 
