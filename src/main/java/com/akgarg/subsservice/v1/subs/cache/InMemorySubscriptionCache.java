@@ -28,7 +28,7 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     private final ScheduledExecutorService evictionExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private final Map<String, SubscriptionDTO> subscriptions = new HashMap<>();
-    private final Map<String, Collection<SubscriptionDTO>> groupedSubscriptions = new HashMap<>();
+    private final Map<String, Collection<SubscriptionDTO>> subscriptionsByUser = new HashMap<>();
 
     /**
      * Starts the eviction task after the bean is initialized.
@@ -47,24 +47,20 @@ public class InMemorySubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public Optional<SubscriptionDTO> getActiveSubscriptionByUserId(final String userId) {
+    public Optional<SubscriptionDTO> getSubscription(final String userId) {
         log.info("Getting subscription for user {} from cache", Objects.requireNonNull(userId));
         return Optional.ofNullable(subscriptions.get(userId));
     }
 
     @Override
-    public void addUserSubscriptions(final String userId, final Collection<SubscriptionDTO> subscriptions) {
-        log.info("Adding all subscription to cache for userId {}", Objects.requireNonNull(userId));
-        groupedSubscriptions.put(userId, subscriptions);
+    public void addAllSubscriptions(final String userId, final List<SubscriptionDTO> subscriptions) {
+        log.info("Adding subscriptions to cache: {}", subscriptions);
+        subscriptionsByUser.put(userId, subscriptions);
     }
 
     @Override
-    public Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(final String userId) {
-        log.debug("Getting all subscriptions from cache for userId {}", Objects.requireNonNull(userId));
-        return Optional.of(groupedSubscriptions.getOrDefault(userId, Collections.emptyList())
-                .stream()
-                .sorted(Comparator.comparing(SubscriptionDTO::getActivatedAt).reversed())
-                .toList());
+    public Collection<SubscriptionDTO> getAllSubscriptions(final String userId) {
+        return subscriptionsByUser.getOrDefault(userId, Collections.emptyList());
     }
 
     /**

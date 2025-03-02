@@ -19,11 +19,15 @@ public class MySQLSubscriptionDatabaseService implements SubscriptionDatabaseSer
     private final SubscriptionRepository subscriptionRepository;
 
     @Override
-    public Optional<Subscription> findActiveSubscription(final String userId) {
+    public Optional<Subscription> getActiveSubscription(final String userId) {
         log.info("finding active subscription for userId {}", userId);
 
         try {
-            return subscriptionRepository.findByUserIdAndStatusEqualsIgnoreCase(userId, SubscriptionStatus.ACTIVE.name());
+            final var activeSubscription = subscriptionRepository.findByUserIdAndStatusEqualsIgnoreCase(userId, SubscriptionStatus.ACTIVE.name());
+            if (activeSubscription.isEmpty() || activeSubscription.get().getExpiresAt() < System.currentTimeMillis()) {
+                return Optional.empty();
+            }
+            return activeSubscription;
         } catch (Exception e) {
             log.error("Failed to find active subscription for userId {}", userId, e);
         }

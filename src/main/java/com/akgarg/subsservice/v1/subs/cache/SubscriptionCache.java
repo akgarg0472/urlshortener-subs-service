@@ -3,16 +3,17 @@ package com.akgarg.subsservice.v1.subs.cache;
 import com.akgarg.subsservice.v1.subs.SubscriptionDTO;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionCache {
 
-    void addSubscription(SubscriptionDTO subscriptionDTO);
+    void addSubscription(SubscriptionDTO subscription);
 
-    Optional<SubscriptionDTO> getActiveSubscriptionByUserId(String userId);
+    Optional<SubscriptionDTO> getSubscription(String userId);
 
-    void addUserSubscriptions(final String userId, Collection<SubscriptionDTO> subscriptions);
+    void addAllSubscriptions(String userId, List<SubscriptionDTO> subscriptions);
 
-    Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(String userId);
+    Collection<SubscriptionDTO> getAllSubscriptions(String userId);
 
 }

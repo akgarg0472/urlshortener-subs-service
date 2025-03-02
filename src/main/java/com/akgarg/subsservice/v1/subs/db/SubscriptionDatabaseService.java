@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface SubscriptionDatabaseService {
 
-    Optional<Subscription> findActiveSubscription(String userId);
+    Optional<Subscription> getActiveSubscription(String userId);
 
     Subscription addSubscription(Subscription subscription);
 

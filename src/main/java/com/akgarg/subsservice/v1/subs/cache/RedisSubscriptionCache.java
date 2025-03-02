@@ -9,10 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -22,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisSubscriptionCache implements SubscriptionCache {
 
     private static final String SUBSCRIPTION_KEY_PREFIX = "subscription:";
-    private static final String ALL_SUBSCRIPTION_MAP_KEY = "all:subscription";
+    private static final String ALL_SUBSCRIPTION_MAP_KEY = "subscription:all:";
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -38,15 +35,6 @@ public class RedisSubscriptionCache implements SubscriptionCache {
             final var subscription = objectMapper.writeValueAsString(subscriptionDTO);
             redisTemplate.opsForValue().set(key, subscription, timeout, TimeUnit.MILLISECONDS);
 
-            final var existingSubscriptions = getAllSubscriptionsByUserId(subscriptionDTO.getUserId());
-
-            if (existingSubscriptions.isPresent()) {
-                existingSubscriptions.get().add(subscriptionDTO);
-                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, objectMapper.writeValueAsString(existingSubscriptions.get()));
-            } else {
-                redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, key, objectMapper.writeValueAsString(List.of(subscriptionDTO)));
-            }
-
             if (log.isDebugEnabled()) {
                 log.debug("Successfully added subscription to cache");
             }
@@ -56,7 +44,7 @@ public class RedisSubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public Optional<SubscriptionDTO> getActiveSubscriptionByUserId(final String userId) {
+    public Optional<SubscriptionDTO> getSubscription(final String userId) {
         log.info("Getting subscription from cache for userId {}", userId);
 
         try {
@@ -73,36 +61,41 @@ public class RedisSubscriptionCache implements SubscriptionCache {
     }
 
     @Override
-    public void addUserSubscriptions(final String userId, final Collection<SubscriptionDTO> subscriptions) {
+    public void addAllSubscriptions(final String userId, final List<SubscriptionDTO> subscriptions) {
         log.debug("Adding subscriptions to cache for userId {}", userId);
 
         try {
-            final var value = objectMapper.writeValueAsString(subscriptions);
-            redisTemplate.opsForHash().put(ALL_SUBSCRIPTION_MAP_KEY, userId, value);
+            final var key = createAllSubscriptionsKey(userId);
+            final var subscription = objectMapper.writeValueAsString(subscriptions);
+            redisTemplate.opsForValue().set(key, subscription, 5 * 60 * 1000L, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            log.error("Failed to add subscriptions to cache", e);
+            log.error("Failed to add subscriptions to cache for userId {}", userId, e);
         }
     }
 
     @Override
-    public Optional<Collection<SubscriptionDTO>> getAllSubscriptionsByUserId(final String userId) {
-        log.info("Getting all subscriptions for userId {}", userId);
+    public Collection<SubscriptionDTO> getAllSubscriptions(final String userId) {
+        log.info("Getting subscriptions from cache for userId {}", userId);
 
         try {
-            final var object = redisTemplate.opsForHash().get(ALL_SUBSCRIPTION_MAP_KEY, userId);
+            final var object = redisTemplate.opsForValue().get(createSubscriptionKey(userId));
             if (Objects.nonNull(object)) {
-                return Optional.ofNullable(objectMapper.readValue(object.toString(), new TypeReference<List<SubscriptionDTO>>() {
-                }));
+                return objectMapper.readValue(object, new TypeReference<List<SubscriptionDTO>>() {
+                });
             }
-            return Optional.empty();
+            return Collections.emptyList();
         } catch (Exception e) {
             log.error("Failed to retrieve subscriptions from cache for userId {}", userId, e);
-            return Optional.empty();
+            return Collections.emptyList();
         }
     }
 
     private String createSubscriptionKey(final String userId) {
         return SUBSCRIPTION_KEY_PREFIX + userId;
+    }
+
+    private String createAllSubscriptionsKey(final String userId) {
+        return ALL_SUBSCRIPTION_MAP_KEY + userId;
     }
 
 }

@@ -19,12 +19,13 @@ public class InMemorySubscriptionDatabaseService implements SubscriptionDatabase
     private final Collection<Subscription> subscriptions = new ArrayList<>();
 
     @Override
-    public Optional<Subscription> findActiveSubscription(final String userId) {
+    public Optional<Subscription> getActiveSubscription(final String userId) {
         log.info("Finding active subscription for user {}", userId);
         return subscriptions
                 .stream()
                 .filter(subscription -> subscription.getUserId().equals(userId) &&
                         SubscriptionStatus.ACTIVE.name().equalsIgnoreCase(subscription.getStatus()))
+                .filter(subscription -> subscription.getExpiresAt() > System.currentTimeMillis())
                 .findFirst();
     }
 

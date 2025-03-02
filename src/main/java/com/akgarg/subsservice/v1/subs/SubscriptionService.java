@@ -89,7 +89,7 @@ public class SubscriptionService {
                 });
 
         final var timestamp = System.currentTimeMillis();
-        final var activeSubscription = subscriptionDatabaseService.findActiveSubscription(request.userId());
+        final var activeSubscription = subscriptionDatabaseService.getActiveSubscription(request.userId());
 
         if (activeSubscription.isPresent() &&
                 activeSubscription.get().getExpiresAt() > timestamp &&
@@ -194,37 +194,30 @@ public class SubscriptionService {
     public GetAllSubscriptionResponse getAllSubscriptions(final String userId) {
         log.info("Get all subscriptions request received for userId {}", userId);
 
-        final var subscriptions = subscriptionCache.getAllSubscriptionsByUserId(userId);
+        final var cachedSubscriptions = subscriptionCache.getAllSubscriptions(userId);
 
-        if (subscriptions.isPresent()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Subscriptions found for userId {} in cache", userId);
-            }
-
+        if (!cachedSubscriptions.isEmpty()) {
+            log.info("All subscriptions found for userId in cache {}", userId);
             return GetAllSubscriptionResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message("All subscriptions fetched successfully")
-                    .subscriptions(subscriptions.get().stream().map(this::createResponseSubscriptionFromSubscription).toList())
+                    .subscriptions(cachedSubscriptions.stream().map(this::createResponseSubscriptionFromSubscription).toList())
                     .build();
         }
 
-        final var subscriptionsFromDb = subscriptionDatabaseService.findAllSubscriptionsForUserId(userId);
+        final var subscriptions = subscriptionDatabaseService.findAllSubscriptionsForUserId(userId);
 
-        if (subscriptionsFromDb.isEmpty()) {
+        if (subscriptions.isEmpty()) {
             log.info("Subscription not found for userId {}", userId);
-
             return GetAllSubscriptionResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message("No subscriptions found")
                     .build();
         }
 
-        final var subscriptionDTOS = subscriptionsFromDb.stream().map(SubscriptionDTO::fromSubscription).toList();
-        subscriptionCache.addUserSubscriptions(
+        final var subscriptionDTOS = subscriptions.stream().map(SubscriptionDTO::fromSubscription).toList();
 
-                userId,
-                subscriptionDTOS
-        );
+        subscriptionCache.addAllSubscriptions(userId, subscriptionDTOS);
 
         return GetAllSubscriptionResponse.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -234,7 +227,7 @@ public class SubscriptionService {
     }
 
     private Optional<SubscriptionDTO> getActiveSubscriptionForUserId(final String userId) {
-        final var cachedSubscriptionDtoOptional = subscriptionCache.getActiveSubscriptionByUserId(userId);
+        final var cachedSubscriptionDtoOptional = subscriptionCache.getSubscription(userId);
 
         if (cachedSubscriptionDtoOptional.isPresent()) {
             if (log.isDebugEnabled()) {
@@ -243,7 +236,7 @@ public class SubscriptionService {
             return cachedSubscriptionDtoOptional;
         }
 
-        final var subscriptionOptional = subscriptionDatabaseService.findActiveSubscription(userId);
+        final var subscriptionOptional = subscriptionDatabaseService.getActiveSubscription(userId);
 
         subscriptionOptional.ifPresent(
                 subscription -> subscriptionCache.addSubscription(SubscriptionDTO.fromSubscription(subscription)
