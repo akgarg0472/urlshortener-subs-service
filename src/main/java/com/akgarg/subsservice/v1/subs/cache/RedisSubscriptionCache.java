@@ -78,7 +78,7 @@ public class RedisSubscriptionCache implements SubscriptionCache {
         log.info("Getting subscriptions from cache for userId {}", userId);
 
         try {
-            final var object = redisTemplate.opsForValue().get(createSubscriptionKey(userId));
+            final var object = redisTemplate.opsForValue().get(createAllSubscriptionsKey(userId));
             if (Objects.nonNull(object)) {
                 return objectMapper.readValue(object, new TypeReference<List<SubscriptionDTO>>() {
                 });
